@@ -2,7 +2,7 @@
 
 Print a text file to PDF in IBM 1403 retro style
 
-![Fortran source code](testOut/test2.png)
+![Fortran source code](tests/testOut/test2.png)
 
 ### Note
 
@@ -12,28 +12,26 @@ This is a work in progress, constructive comments are appreciated.
 
 #### Linux
 
-The easiest way to install prt1403 is to clone the repository and to execute prt1403 from that directory.
+The easiest way to install prt1403 is as follows.
 
-    mkdir ~/prt1403
-    cd ~/prt1403
+    mkdir -p ~/.local/bin
     git clone https://github.com/Pynckels/prt1403.git
-    chmod +x prt1403.py
-    pip install -r requirements.txt
-    cd ~
+    pip install -r ./prt1403/requirements.txt
+    mv ./prt1403/prt1403 ~/.local/bin/prt1403
+    chmod +x ~/.local/bin/prt1403
+    rm -r prt1403
 
-Running prt1403 can be done as follows.
-
-    ~/prt1403/prt1403.py -h
+If running the program does not function, logging out and back in can help to update your $PATH.
 
 #### Mac & Windows
 
-Contact me and we'll work it out together.
+Contact me and we'll work something out together.
 
 ### Syntax
 
 To get the command line syntax the -h and the --help option can be used.
 
-    ~/prt1403 --help
+    prt1403 --help
 
 This results in the following information.
 
