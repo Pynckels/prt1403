@@ -35,7 +35,7 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403.py [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f {FONT1403,FONTMONO}] [-j jobID] [-o <Output file>] [-s {SMALL,MEDIUM,WIDE}] [-u userID] <Input file>
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f {FONT1403,FONTMONO}] [-j jobID] [-o <Output file>] [-s {SMALL,MEDIUM,WIDE}] [-u userID] <Input file>
     
     Print a text file to PDF in IBM 1403 retro style
     
