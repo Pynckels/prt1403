@@ -297,36 +297,49 @@ def main():
 
     def infile_validator(file_path):
         ''' Check if the file is UTF-8 encoded. '''
+        progName  = os.path.basename(__file__)
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 file.read()
             return file_path                                        # Return the file path if it's a valid UTF-8 file
         except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError(f'The file {file_path} is not a valid UTF-8 text file.')
+            print(parser.format_usage().strip())
+            print(f'{progName}: error: The file {file_path} is not a valid UTF-8 text file.')
+            quit()
         except FileNotFoundError:
-            raise argparse.ArgumentTypeError(f'The file {file_path} does not exist.')
+            print(parser.format_usage().strip())
+            print(f'{progName}: error: The file {file_path} does not exist.')
+            quit()
 
-    def outfile_validator(file_path):
-        ''' Check if the output file path is valid and does not exist. '''
+    def outfile_validator(file_path, overwrite=False):
+        ''' Check if the output file path is valid and does not exist, unless overwrite is True. '''
+        overwrite = args.overwrite
+        progName  = os.path.basename(__file__)
         directory = os.path.dirname(file_path)                      # Check if the directory exists
         if not os.path.isdir(directory) and directory != '':
-            raise argparse.ArgumentTypeError(f'The directory {directory} does not exist.')
-        if os.path.exists(file_path):                               # Check if the file already exists
-            raise argparse.ArgumentTypeError(f'The file {file_path} already exists.')
+            print(parser.format_usage().strip())
+            print(f'{progName}: error: The directory {directory} does not exist.')
+            quit()
+        if os.path.exists(file_path) and not overwrite:             # Check if the file exists and overwrite is not allowed
+            print(parser.format_usage().strip())
+            print(f'{progName}: error: The file {file_path} already exists. Use -y to overwrite.')
+            quit()
         return file_path                                            # Return the output file path if it's valid
 
     parser = argparse.ArgumentParser(description='Print a text file to PDF in IBM 1403 retro style')
 
-    parser.add_argument('infile',          metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
-    parser.add_argument('-c', '--color',                            choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
-    parser.add_argument('-f', '--font',                             choices=['FONT1403', 'FONTMONO'],             default='FONTMONO',    help='Choose between FONT1403 and FONTMONO.')
-    parser.add_argument('-j', '--jobid',   metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
-    parser.add_argument('-o', '--outfile', metavar='<Output file>', type=outfile_validator,                       default='prt1403.pdf', help='Output file name.')
-    parser.add_argument('-s', '--size',                             choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
-    parser.add_argument('-u', '--userid',  metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
-    parser.add_argument('-v', '--version', action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__))
+    parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
+    parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
+    parser.add_argument('-f', '--font',                               choices=['FONT1403', 'FONTMONO'],             default='FONTMONO',    help='Choose between FONT1403 and FONTMONO.')
+    parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
+    parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
+    parser.add_argument('-u', '--userid',    metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-v', '--version',   action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__),  help='Show program version and exit.')
+    parser.add_argument('-y', '--overwrite',                          action='store_true',                          default=False,         help='Overwrite output file.')
 
     args = parser.parse_args()
+    args.outfile = outfile_validator(args.outfile, overwrite=args.overwrite)
 
     if args.font == 'FONT1403':                                     # Load font from included base64
         font = FONT1403

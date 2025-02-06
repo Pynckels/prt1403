@@ -25,7 +25,7 @@ If running the program does not function, logging out and back in can help to up
 
 #### Mac & Windows
 
-Contact me and we'll work something out together.
+Contact me and we'll cook something up together.
 
 ### Syntax
 
@@ -35,7 +35,9 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f {FONT1403,FONTMONO}] [-j jobID] [-o <Output file>] [-s {SMALL,MEDIUM,WIDE}] [-u userID] <Input file>
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f {FONT1403,FONTMONO}] [-j jobID] [-o <Output file>]
+                   [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
+                   <Input file>
     
     Print a text file to PDF in IBM 1403 retro style
     
@@ -56,6 +58,8 @@ This results in the following information.
                             Paper width 9.5", 12" or 14.5". Paper height is 11"
       -u userID, --userid userID
                             User identifier (1 to 8 alphanumeric characters).
+      -v, --version         Show program version and exit.
+      -y, --overwrite       Overwrite output file.
 
 Note that `FONT1403` has a limited character set. If you have a 1403 font type with a larger character set then I would be glad to get in touch.
 
