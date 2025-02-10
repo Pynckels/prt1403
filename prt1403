@@ -8,8 +8,9 @@
 # IBM font   : https://github.com/Pynckels/prt1403/fonts/IBMPlexMono-Regular.license
 # 1403 font  : https://ibm-1401.info/1403Fonts.html#Fonts
 
-from datetime import datetime
-from fpdf     import FPDF
+from datetime        import datetime
+from fontTools.ttLib import TTFont
+from fpdf            import FPDF
 
 import argparse
 import base64
@@ -260,7 +261,8 @@ def prt1403_print(
     color_form  = GREEN     ,
     color_holes = GRAY      ,
     userId      = 'USERID'  ,
-    jobId       = 'JOBID'
+    jobId       = 'JOBID'   ,
+    header      = True
     ):
 
     '''
@@ -278,6 +280,10 @@ def prt1403_print(
           'PAGE: '
     page = 1
 
+    linesPerPage = 66
+    if header:
+        linesPerPage = 60
+
     with open(inFile, 'r') as inf:
         lines = inf.readlines()
 
@@ -285,13 +291,16 @@ def prt1403_print(
     prt1403_add_font(pdf, font)                                     # Load required font
 
     while len(lines):
-        text = [' ', ' ', ' ']
-        text = text + [head + f'{page:04}']
-        text = text + [' ', ' ']
-        text = text + lines[:60]
+        if header:
+            text = [' ', ' ', ' ']
+            text = text + [head + f'{page:04}']
+            text = text + [' ', ' ']
+        else:
+            text = []
+        text = text + lines[:linesPerPage]
         prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
         page += 1                                                   # Update status variables
-        lines = lines[60:]
+        lines = lines[linesPerPage:]
 
     pdf.output(outFile)                                             # Write pdf file
 
@@ -305,6 +314,28 @@ def main():
     '''
     Check arguments and print file with the given options
     '''
+
+    def font_validator(font_path):
+        ''' Check if the font_path is 'FONT1403', 'FONTMONO' or a an existing .otf or .ttf file '''
+        progName  = os.path.basename(__file__)
+        if font_path == 'FONT1403':
+            return font_path
+        elif font_path == 'FONTMONO':
+            return font_path
+        else:
+            try:
+                font = TTFont(font_path)
+                #with open(font_path, 'rb') as file:
+                #    file.read()
+                return font_path                                    # Return the font path if it's a valid file
+            except FileNotFoundError:
+                print(parser.format_usage().strip())
+                print(f'{progName}: error: The file {font_path} does not exist.')
+                quit()            
+            except:
+                print(parser.format_usage().strip())
+                print(f'{progName}: error: The file {font_path} is not a valid TrueType font file.')
+                quit()            
 
     def id_validator(value):
         ''' Check if the value is between 1 and 8 characters long and is alphanumeric. '''
@@ -347,8 +378,9 @@ def main():
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
-    parser.add_argument('-f', '--font',                               type=str,                                     default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
+    parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
     parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
     parser.add_argument('-p', '--pitch',                              type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
     parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
@@ -358,7 +390,7 @@ def main():
 
     args = parser.parse_args()
     args.outfile = outfile_validator(args.outfile, overwrite=args.overwrite)
-    
+
     if args.font == 'FONT1403':                                     # Load font from included base64
         font = FONT1403
         fontBin = base64.b64decode(IBM1403)
@@ -380,7 +412,8 @@ def main():
         color_form  = globals()[args.color]          ,
         color_holes = GRAY                           ,
         userId      = args.userid                    ,
-        jobId       = args.jobid
+        jobId       = args.jobid                     ,
+        header      = not args.noheader
     )
 
 #------------------------------------------------------------------------------------------

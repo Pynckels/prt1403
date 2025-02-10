@@ -1,1 +1,2 @@
+fonttools==4.55.3
 fpdf2==2.8.2
