@@ -35,8 +35,8 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f FONT] [-j jobID] [-o <Output file>] [-p PITCH]
-                   [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f FONT] [-j jobID] [-n] [-o <Output file>] [-p PITCH] [-s {SMALL,MEDIUM,WIDE}]
+                   [-u userID] [-v] [-y]
                    <Input file>
     
     Print a text file to PDF in IBM 1403 retro style
@@ -51,6 +51,7 @@ This results in the following information.
       -f FONT, --font FONT  Choose between FONT1403, FONTMONO or an installed font.
       -j jobID, --jobid jobID
                             Job identifier (1 to 8 alphanumeric characters).
+      -n, --noheader        Disable printing of page headers.
       -o <Output file>, --outfile <Output file>
                             Output file name.
       -p PITCH, --pitch PITCH
