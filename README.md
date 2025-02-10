@@ -2,7 +2,7 @@
 
 Print a text file to PDF in IBM 1403 retro style
 
-![Fortran source code](tests/testOut/test2.png)
+![Fortran source code example](tests/testOut/test2.png)
 
 ### Note
 
@@ -65,11 +65,11 @@ This results in the following information.
 
 ### Fonts
 
-The default font is `FONTMONO` (IBMPlexMono-Regular.ttf). This font comes with this program.
+The default font is `FONTMONO` (IBMPlexMono-Regular.ttf) which comes with this program.
 
     prt1403 -o example.pdf example.txt
 
-There is also the choice for `FONT1403` (IBM140310Pitch-Regular-MRW.ttf). This font also comes with this program. The latter has a limited character set, but is a very good representation of the original 1403 printer chain. To use `FONT1403` you can use the option -f/--font.
+There is also the choice for `FONT1403` (IBM140310Pitch-Regular-MRW.ttf) which also comes with this program. The latter has a limited character set, but is a very good representation of the original 1403 printer chain. To use `FONT1403` you can use the option -f/--font.
 
     prt1403 -f FONT1403 -o example.pdf example.txt
 
@@ -79,9 +79,13 @@ If you want to use fonts that are installed on your pc, that's also possible. To
 
     fc-list | grep -ioP '.*\.(otf|ttf)(?=:)'
 
-To use an installed font (e.g. FreeMono.ttf) you can use the option -f/--font) and eventually -p/--pitch to scale the font.
+To use an installed font and resize it you can use the option -f/--font and -p/--pitch to scale the font.
 
-    prt1403 -f '/usr/share/fonts/truetype/freefont/FreeMono.ttf' -p 12 -o example.pdf example.txt
+    prt1403 -s SMALL -f '/usr/share/fonts/truetype/Jellyka_Estrya_Handwriting/Jellyka_Estrya_Handwriting.ttf' -p 38 -o example.pdf example.txt
+
+This looks like:
+
+![Fortran source code example with chosen font](tests/testOut/test4_4.png)
 
 ### License
 
