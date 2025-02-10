@@ -47,6 +47,8 @@ PAGE_WIDE    = [1044, 792, 132, 66]                                 # 14.5 inch 
 
 FONT1403     = ['IBM140310Pitch-Regular-MRW.ttf', 10, '#$%*+,-./0123456789@ABCDEFGHIJKLMNOPQRSTUVWXYZ']
 FONTMONO     = ['IBMPlexMono-Regular.ttf'       , 12, None]
+FONTOTHER    = [''                              , 10, None]
+fontPath     = ''                                                   # Path to temporary file if using internal font
 
 #------------------------------------------------------------------------------------------
 
@@ -67,10 +69,8 @@ def change_invalid_characters(inStr, font):
     elif font is FONTMONO:
         result = ''.join(char if ASCII_MIN <= char <= ASCII_MAX else ASCII_REP for char in inStr)
         return result
-    else:                                                           # Take the minimum allowed approach
-        validCharSet = set( '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' )
-        result = ''.join(char if char in validCharsSet else ASCII_REP for char in inStr.upper())
-        return result
+    else:                                                           # Whatever... (Must be refine later)
+        return inStr
 
     return None                                                     # This should never be reached (security measure)
 
@@ -93,6 +93,27 @@ def draw_bezier_curve(pdf, x0, y0, x1, y1, x2, y2, steps=20):
             pdf.line(last_x, last_y, x, y)
 
         last_x, last_y = x, y                                       # Update last point to current point
+
+#------------------------------------------------------------------------------------------
+
+def prt1403_add_font(pdf, font):
+
+    '''
+    Set font to use during printing
+    '''
+
+    global fontPath
+
+    if font is FONTOTHER:                                           # Load font installed on the pc
+        pdf.add_font('prt1403Font', '', font[0])
+    else:                                                           # Load font from included base64
+        if not (font is FONT1403) and not (font is FONTMONO):       # Security measure to prevent invalid font
+            font = FONTMONO
+                                                                    # Setup prt1403 font, load from variable
+        with tempfile.NamedTemporaryFile(delete=False, delete_on_close=False, suffix='.ttf') as tf:
+            tf.write(font[0])
+            fontPath = tf.name
+            pdf.add_font('prt1403Font', '', fontPath)
 
 #------------------------------------------------------------------------------------------
 
@@ -261,12 +282,7 @@ def prt1403_print(
         lines = inf.readlines()
 
     pdf = FPDF(orientation='P', unit='pt', format=size)             # Create fpdf environment
-
-                                                                    # Setup prt1403 font, load from variable
-    with tempfile.NamedTemporaryFile(delete=False, delete_on_close=False, suffix='.ttf') as tf:
-        tf.write(font[0])
-        fontPath = tf.name
-        pdf.add_font('prt1403Font', '', fontPath)
+    prt1403_add_font(pdf, font)                                     # Load required font
 
     while len(lines):
         text = [' ', ' ', ' ']
@@ -279,7 +295,8 @@ def prt1403_print(
 
     pdf.output(outFile)                                             # Write pdf file
 
-    os.remove(fontPath)                                             # Clean up: Delete the temporary font file
+    if fontPath != '':
+        os.remove(fontPath)                                         # Clean up: Delete temporary font file if one was created
 
 #------------------------------------------------------------------------------------------
 
@@ -330,9 +347,10 @@ def main():
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
-    parser.add_argument('-f', '--font',                               choices=['FONT1403', 'FONTMONO'],             default='FONTMONO',    help='Choose between FONT1403 and FONTMONO.')
+    parser.add_argument('-f', '--font',                               type=str,                                     default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
+    parser.add_argument('-p', '--pitch',                              type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
     parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
     parser.add_argument('-u', '--userid',    metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-v', '--version',   action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__),  help='Show program version and exit.')
@@ -340,7 +358,7 @@ def main():
 
     args = parser.parse_args()
     args.outfile = outfile_validator(args.outfile, overwrite=args.overwrite)
-
+    
     if args.font == 'FONT1403':                                     # Load font from included base64
         font = FONT1403
         fontBin = base64.b64decode(IBM1403)
@@ -349,10 +367,10 @@ def main():
         font = FONTMONO
         fontBin = base64.b64decode(IBMPlexMono)
         font[0] = fontBin
-    else:                                                           # This should never be reached (security measure)
-        font = FONTMONO
-        fontBin = base64.b64decode(IBMPlexMono)
-        font[0] = fontBin
+    else:                                                           # Load font installed on the pc
+        font = FONTOTHER
+        font[0] = args.font
+        font[1] = args.pitch
 
     prt1403_print(                                                  # Hit the road...
         args.infile                                  ,

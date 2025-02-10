@@ -35,7 +35,7 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f {FONT1403,FONTMONO}] [-j jobID] [-o <Output file>]
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f FONT] [-j jobID] [-o <Output file>] [-p PITCH]
                    [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
                    <Input file>
     
@@ -48,12 +48,13 @@ This results in the following information.
       -h, --help            show this help message and exit
       -c {BLUE,GRAY,GREEN,WHITE}, --color {BLUE,GRAY,GREEN,WHITE}
                             Color of form preprint. Text color is black.
-      -f {FONT1403,FONTMONO}, --font {FONT1403,FONTMONO}
-                            Choose between FONT1403 and FONTMONO.
+      -f FONT, --font FONT  Choose between FONT1403, FONTMONO or an installed font.
       -j jobID, --jobid jobID
                             Job identifier (1 to 8 alphanumeric characters).
       -o <Output file>, --outfile <Output file>
                             Output file name.
+      -p PITCH, --pitch PITCH
+                            Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.
       -s {SMALL,MEDIUM,WIDE}, --size {SMALL,MEDIUM,WIDE}
                             Paper width 9.5", 12" or 14.5". Paper height is 11"
       -u userID, --userid userID
@@ -61,7 +62,25 @@ This results in the following information.
       -v, --version         Show program version and exit.
       -y, --overwrite       Overwrite output file.
 
-Note that `FONT1403` has a limited character set. If you have a 1403 font type with a larger character set then I would be glad to get in touch.
+### Fonts
+
+The default font is `FONTMONO` (IBMPlexMono-Regular.ttf). This font comes with this program.
+
+    prt1403 -o example.pdf example.txt
+
+There is also the choice for `FONT1403` (IBM140310Pitch-Regular-MRW.ttf). This font also comes with this program. The latter has a limited character set, but is a very good representation of the original 1403 printer chain. To use `FONT1403` you can use the option -f/--font.
+
+    prt1403 -f FONT1403 -o example.pdf example.txt
+
+Note that the option -p/--pitch is disregarded when using the fonts `FONTMONO` or `FONT1403`.
+
+If you want to use fonts that are installed on your pc, that's also possible. To find the installed fonts on Linux, you can use the following commands:
+
+    fc-list | grep -ioP '.*\.(otf|ttf)(?=:)'
+
+To use an installed font (e.g. FreeMono.ttf) you can use the option -f/--font) and eventually -p/--pitch to scale the font.
+
+    prt1403 -f '/usr/share/fonts/truetype/freefont/FreeMono.ttf' -p 12 -o example.pdf example.txt
 
 ### License
 
