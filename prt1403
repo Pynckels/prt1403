@@ -382,7 +382,7 @@ def main():
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
     parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
-    parser.add_argument('-p', '--pitch',                              type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
+    parser.add_argument('-p', '--points',                             type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
     parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
     parser.add_argument('-u', '--userid',    metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-v', '--version',   action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__),  help='Show program version and exit.')

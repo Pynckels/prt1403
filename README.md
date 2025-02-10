@@ -35,7 +35,7 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f FONT] [-j jobID] [-n] [-o <Output file>] [-p PITCH] [-s {SMALL,MEDIUM,WIDE}]
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-f FONT] [-j jobID] [-n] [-o <Output file>] [-p POINTS] [-s {SMALL,MEDIUM,WIDE}]
                    [-u userID] [-v] [-y]
                    <Input file>
     
@@ -54,7 +54,7 @@ This results in the following information.
       -n, --noheader        Disable printing of page headers.
       -o <Output file>, --outfile <Output file>
                             Output file name.
-      -p PITCH, --pitch PITCH
+      -p POINTS, --points POINTS
                             Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.
       -s {SMALL,MEDIUM,WIDE}, --size {SMALL,MEDIUM,WIDE}
                             Paper width 9.5", 12" or 14.5". Paper height is 11"
@@ -73,13 +73,13 @@ There is also the choice for `FONT1403` (IBM140310Pitch-Regular-MRW.ttf) which a
 
     prt1403 -f FONT1403 -o example.pdf example.txt
 
-Note that the option -p/--pitch is disregarded when using the fonts `FONTMONO` or `FONT1403`.
+Note that the option -p/--points is disregarded when using the fonts `FONTMONO` or `FONT1403`.
 
 If you want to use fonts that are installed on your pc, that's also possible. To find the installed fonts on Linux, you can use the following commands:
 
     fc-list | grep -ioP '.*\.(otf|ttf)(?=:)'
 
-To use an installed font and resize it you can use the option -f/--font and -p/--pitch to scale the font.
+To use an installed font and resize it you can use the option -f/--font and -p/--points to scale the font.
 
     prt1403 -s SMALL -f '/usr/share/fonts/truetype/Jellyka_Estrya_Handwriting/Jellyka_Estrya_Handwriting.ttf' -p 38 -o example.pdf example.txt
 
