@@ -29,5 +29,5 @@ with open('IBM140310Pitch-Regular-MRW.ttf', 'rb') as f:
 line = ['#------------------------------------------------------------------------------------------']
 code = line + b64_1 + line + b64_2 + line
 
-with open('snippet.inc', 'w') as f:
+with open('IBMfont.inc', 'w') as f:
     f.write("\n".join(code) + "\n")

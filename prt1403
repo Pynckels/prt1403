@@ -14,9 +14,12 @@ from fpdf            import FPDF
 
 import argparse
 import base64
+import json
 import lzma
 import os
+import platform
 import re
+import socket
 import tempfile
 
 #------------------------------------------------------------------------------------------
@@ -75,6 +78,35 @@ def change_invalid_characters(inStr, font):
         return inStr
 
     return None                                                     # This should never be reached (security measure)
+
+#------------------------------------------------------------------------------------------
+
+def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages):
+
+    '''
+    Create the contents of a separator page
+    '''
+
+    sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
+
+    sp[4] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
+            ' ' * ( size[2] -71 ) + 'PAGE: 0000'
+
+    sp[10] = 'DATE   : ' + date
+    sp[11] = 'USER   : ' + userId
+    sp[12] = 'JOB    : ' + jobId
+    sp[13] = 'FILE   : ' + inFile
+    sp[14] = 'PAGES  : ' + str(nrPages)
+    sp[15] = 'HOST   : ' + socket.gethostname()
+    sp[16] = 'SYSTEM : ' + platform.system() + '(' + platform.release() + ')'
+    infoLength = max(len(line) for line in sp[7:])
+    sp[ 9] = '-' * infoLength
+    sp[17] = '-' * infoLength
+
+    for i in range(9,18):
+        sp[i] = ' ' * ((size[2]-infoLength) // 2 ) + sp[i]         # Center the contents of all the info lines
+
+    return sp
 
 #------------------------------------------------------------------------------------------
 
@@ -263,7 +295,8 @@ def prt1403_print(
     color_holes = GRAY      ,
     userId      = 'USERID'  ,
     jobId       = 'JOBID'   ,
-    header      = True
+    header      = True      ,
+    separator   = False
     ):
 
     '''
@@ -271,15 +304,10 @@ def prt1403_print(
     '''
 
     date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    head = 'DATE: '                + \
-          date                     + \
-          '     USER: '            + \
-          userId[:8].ljust(8, ' ') + \
-          '     JOB: '             + \
-          jobId[:8].ljust(8, ' ')  + \
-          ' ' * ( size[2] -71 )    + \
-          'PAGE: '
+    head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
+           ' ' * ( size[2] -71 ) + 'PAGE: '
     page = 1
+    fileNr = 1
 
     linesPerPage = 66
     if header:
@@ -288,17 +316,23 @@ def prt1403_print(
     with open(inFile, 'r') as inf:
         lines = inf.readlines()
 
+    nrPages = len(lines) // linesPerPage + 1
+
     pdf = FPDF(orientation='P', unit='pt', format=size)             # Create fpdf environment
     prt1403_add_font(pdf, font)                                     # Load required font
 
-    while len(lines):
-        if header:
+    if separator:                                                   # Print separator page
+        text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages)
+        prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
+
+    while len(lines):                                               # Print contents
+        if header:                                                  # Print header
             text = [' ', ' ', ' ']
             text = text + [head + f'{page:04}']
             text = text + [' ', ' ']
         else:
             text = []
-        text = text + lines[:linesPerPage]
+        text = text + lines[:linesPerPage]                          # Print data
         prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
         page += 1                                                   # Update status variables
         lines = lines[linesPerPage:]
@@ -341,7 +375,7 @@ def main():
     def id_validator(value):
         ''' Check if the value is between 1 and 8 characters long and is alphanumeric. '''
         if not re.match(r'^[a-zA-Z0-9]{1,8}$', value):
-            raise argparse.ArgumentTypeError('Job ID must be between 1 and 8 alphanumeric characters.')
+            raise argparse.ArgumentTypeError('Job ID and User ID must be between 1 and 8 alphanumeric characters.')
         return value
 
     def infile_validator(file_path):
@@ -379,6 +413,7 @@ def main():
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
+    parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
@@ -407,6 +442,9 @@ def main():
         font[0] = args.font
         font[1] = args.points
 
+    userId = args.userid[:8].upper().ljust(8, ' ')                  # Normalize UserID
+    jobId  = args.jobid[:8].upper().ljust(8, ' ')                   # Normalize JobID
+
     prt1403_print(                                                  # Hit the road...
         args.infile                                  ,
         args.outfile                                 ,
@@ -414,10 +452,26 @@ def main():
         size        = globals()['PAGE_' + args.size] ,
         color_form  = globals()[args.color]          ,
         color_holes = GRAY                           ,
-        userId      = args.userid                    ,
-        jobId       = args.jobid                     ,
-        header      = not args.noheader
+        userId      = userId                         ,
+        jobId       = jobId                          ,
+        header      = not args.noheader              ,
+        separator   = args.separator
     )
+
+#------------------------------------------------------------------------------------------
+
+SEPFONT = """/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4BM2AqNdAD2IhCIh3pTod1OnT8nY4vr2Dz4e9Yl5EGt81H
+B81M0NDeOkhEzxK7yAElFN1uaU/i4Dqu4gyD56L3B5KL6gPeQ4nvOai+69PSPBX1RwcQcAzBkCK89MlHS5iJwe+ETgt
+QXeMrfWd06R4lQnlCGsijH1WcHjD4zGak0//ckq3dr6PlLc1nNpyy7sCwxopilPXp1qaiDLxeiuoB5uE/tj9E+XOV7Q
+JGoZ5lgZAIayXJm3kKyi2UwZP8XlIpWxl6kfP6GQq3hN0gdSBp9spM3kS3Co37HMAhVAGTvsMJI0aJc5R6B4YRsBHFr
+N5Y8iHGQooHt562qohwoZHzHtLoduzynG1VPyrx1V1Ie5+rfhsTrpTnNQgEPdozTcKuHvrYFYLRizBW3bA/fyzhoIxk
+XMwEDdkXAq/O+xytc67w/jIrPr26ZKUFpj2+vopSvUtDvViW9BArzPXyHnMW0KnQMgB6eQSjw6Hv3JZInvwXnjtKesv
+0yJ6kX6tUSjpo1UC/eMVAcafA/80YolBIBbBuqklsLmVmRyWAS8VgxiTHJi3Zc9mtaFXPQLOyhuPx0OYE1NI4DYWm5/
+y6K6qxUswtaCzM5vZR7RzqgEfmdZsvbKwSJfnxZVKrMeU7VfzP7spQ9yYYuEm1gMvxGdi6YHhvpRd7VdlIV+HhxlmXl
+BkNxHboq4jlb3cvMRZvE4frkOWZqyM3pB/nyhSLMg45oUfuRr1KJdj4ml2BGRcyLz70c5bpV54z58J7P+vR6vYp2gzO
+q6XRHhxN0snKvJdQSQYjPXgBJNGsJUQmTzscp1Ae5XOLwMUflGmb8tya9OSXWXnOBo2GNH+IB0LXAWvbdrneDjBwC98
+pB4U8ZMuOM7jJ0UTSMrGeuarOxiokrE4ePZfsVC135jAAAA5aqNhQ9ttNcAAb8FtyYAAHy2TFyxxGf7AgAAAAAEWVo=
+"""
 
 #------------------------------------------------------------------------------------------
 
