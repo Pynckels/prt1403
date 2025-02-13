@@ -104,7 +104,8 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages):
     sp[17] = '-' * infoLength
 
     for i in range(9,18):
-        sp[i] = ' ' * ((size[2]-infoLength) // 2 ) + sp[i]         # Center the contents of all the info lines
+        sp[i] = sp[i].upper()                                       # To be on the safe side (with fonts)
+        sp[i] = ' ' * ((size[2]-infoLength) // 2 ) + sp[i]          # Center the contents of all the info lines
 
     return sp
 
