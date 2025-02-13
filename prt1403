@@ -107,6 +107,28 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages):
         sp[i] = sp[i].upper()                                       # To be on the safe side (with fonts)
         sp[i] = ' ' * ((size[2]-infoLength) // 2 ) + sp[i]          # Center the contents of all the info lines
 
+    fontLzm   = base64.b64decode(SEPFONT)                           # Load character dictionary
+    fontJson  = lzma.decompress(fontLzm)
+    fontDict  = json.loads(fontJson)
+
+    base  = 25                                                      # Fill in UserID
+    for line in range(0,10):
+        for char in userId.strip():
+            sp[base+line] += fontDict[char][line] + ' '
+    infoLength = max(len(line) for line in sp[base:base+10])
+    for line in range(0,10):
+        sp[base+line] = sp[base+line][:-1]
+        sp[base+line] = ' ' * ((size[2]-infoLength) // 2 ) + sp[base+line]
+
+    base  = 38                                                      # Fill in UserID
+    for line in range(0,10):
+        for char in jobId.strip():
+            sp[base+line] += fontDict[char][line] + ' '
+    infoLength = max(len(line) for line in sp[base:base+10])
+    for line in range(0,10):
+        sp[base+line] = sp[base+line][:-1]
+        sp[base+line] = ' ' * ((size[2]-infoLength) // 2 ) + sp[base+line]
+
     return sp
 
 #------------------------------------------------------------------------------------------
