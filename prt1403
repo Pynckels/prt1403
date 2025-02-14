@@ -20,6 +20,8 @@ import os
 import platform
 import re
 import socket
+import string
+import sys
 import tempfile
 
 #------------------------------------------------------------------------------------------
@@ -130,11 +132,11 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nr
     sp[16] = jobId + '  ' + userId
     sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + os.getlogin()
     sp[18] = jobId + '  ' + userId
-    sp[19] = jobId + '  ' + userId + '   SYSUSER= ' + os.getlogin()
+    sp[19] = jobId + '  ' + userId + '   FORM= STANDARD'
     sp[20] = jobId + '  ' + userId
-    sp[21] = jobId + '  ' + userId + '   FORM= STANDARD'
+    sp[21] = jobId + '  ' + userId + '   CHAR= ' + fontName
     sp[22] = jobId + '  ' + userId
-    sp[23] = jobId + '  ' + userId + '   CHAR= ' + fontName
+    sp[23] = jobId + '  ' + userId + '   PRT1403 VERSION= ' + __VERSION__
 
     sp = print_large_font(sp, 27, userId,  fontDict)                # Print UserID in large font
     sp = print_large_font(sp, 39, jobId,   fontDict)                # Print JobID  in large font
@@ -347,39 +349,53 @@ def prt1403_print(
     date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
            ' ' * ( size[2] -72 ) + 'PAGE: '
-    page = 1
-    fileNr = 1
 
-    linesPerPage = 66
     if header:
         linesPerPage = 60
+    else:
+        linesPerPage = 66
 
-    with open(inFile, 'r') as inf:
-        lines = inf.readlines()
-
-    nrLines = len(lines)
-    nrPages = nrLines // linesPerPage + 1
+    if inFile == 'stdin':                                           # Input from stdin
+        inChars = sys.stdin.buffer.read().decode('utf-8')
+    else:                                                           # Input from file
+        with open(inFile, 'rb') as inf:
+            inChars = inf.read().decode('utf-8')
+    
+    inChars = inChars.replace('\x19', '')                           # Remove eventual end of medium (EM)
+    files = inChars.split('\x1C')                                   # Split at file separator (FS)
+    files = [ file.split('\n') for file in files]                   # Make list of lists
 
     pdf = FPDF(orientation='P', unit='pt', format=size)             # Create fpdf environment
     prt1403_add_font(pdf, font)                                     # Load required font
 
-    if separator:                                                   # Print separator page
-        text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
-        prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
+    fileNr = 1
+    for file in files:        
+        nrLines = len(file)
+        nrPages = nrLines // linesPerPage + 1
 
-    while len(lines):                                               # Print contents
-        if header:                                                  # Print header
-            text = [' ', ' ', ' ']
-            text = text + [head + f'{page:04}']
-            text = text + [' ', ' ']
-        else:
-            text = []
-        text = text + lines[:linesPerPage]                          # Print data
-        prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
-        page += 1                                                   # Update status variables
-        lines = lines[linesPerPage:]
+        if separator:                                               # Print separator page
+            text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
+            prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
 
-    pdf.output(outFile)                                             # Write pdf file
+        page = 1
+        while len(file):                                            # Print contents
+            if header:                                              # Print header
+                text = [' ', ' ', ' ']
+                text = text + [head + f'{page:04}']
+                text = text + [' ', ' ']
+            else:
+                text = []
+            text = text + file[:linesPerPage]                       # Print data
+            prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
+            file = file[linesPerPage:]                              # Remove printed lines
+            page += 1                                               # Update page status variables
+
+        fileNr += 1                                                 # Update file status variables
+
+    if outFile == 'stdout':                                         # Write pdf to stdout
+        sys.stdout.buffer.write( pdf.output() )
+    else:                                                           # Write pdf to file
+        pdf.output(outFile)
 
     if fontPath != '':
         os.remove(fontPath)                                         # Clean up: Delete temporary font file if one was created
@@ -421,7 +437,9 @@ def main():
         return value
 
     def infile_validator(file_path):
-        ''' Check if the file is UTF-8 encoded. '''
+        ''' Check if the file is UTF-8 encoded. Exception for stdin.'''
+        if file_path == '-':
+            return file_path
         progName  = os.path.basename(__file__)
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -437,7 +455,9 @@ def main():
             quit()
 
     def outfile_validator(file_path, overwrite=False):
-        ''' Check if the output file path is valid and does not exist, unless overwrite is True. '''
+        ''' Check if the output file path is valid and does not exist, unless overwrite is True. Exception for stdout '''
+        if file_path == '-':
+            return file_path
         overwrite = args.overwrite
         progName  = os.path.basename(__file__)
         directory = os.path.dirname(file_path)                      # Check if the directory exists
@@ -453,7 +473,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Print a text file to PDF in IBM 1403 retro style')
 
-    parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process.')
+    parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process or - for stdin.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
@@ -487,9 +507,19 @@ def main():
     userId = args.userid[:8].upper().ljust(8, ' ')                  # Normalize UserID
     jobId  = args.jobid[:8].upper().ljust(8, ' ')                   # Normalize JobID
 
+    if args.infile == '-':                                          # Normalize input file name
+        inFile = 'stdin'
+    else:
+        inFile = args.infile
+
+    if args.outfile == '-':                                         # Normalize input file name
+        outFile = 'stdout'
+    else:
+        outFile = args.outfile
+
     prt1403_print(                                                  # Hit the road...
-        args.infile                                  ,
-        args.outfile                                 ,
+        inFile                                       ,
+        outFile                                      ,
         font        = font                           ,
         size        = globals()['PAGE_' + args.size] ,
         color_form  = globals()[args.color]          ,

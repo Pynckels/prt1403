@@ -42,7 +42,7 @@ This results in the following information.
     Print a text file to PDF in IBM 1403 retro style
     
     positional arguments:
-      <Input file>          File to process.
+      <Input file>          File to process or - for stdin.
     
     options:
       -h, --help            show this help message and exit
@@ -54,7 +54,7 @@ This results in the following information.
                             Job identifier (1 to 8 alphanumeric characters).
       -n, --noheader        Disable printing of page headers.
       -o <Output file>, --outfile <Output file>
-                            Output file name.
+                            Output file name or - for stdout.
       -p POINTS, --points POINTS
                             Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.
       -s {SMALL,MEDIUM,WIDE}, --size {SMALL,MEDIUM,WIDE}
@@ -87,6 +87,28 @@ To use an installed font and resize it you can use the option -f/--font and -p/-
 This looks like:
 
 ![Fortran source code example with chosen font](tests/testOut/test4_4.png)
+
+### Print multiple files from stdin
+
+The input of prt1403 can be a file or the standard input (stdin). To send a file to prt1403 through stdin, one can use the command:
+
+    prt1403 -o example.pdf - < example.txt
+
+or the command:
+
+    cat example.txt | prt1403 -o example.pdf -
+
+To send multiple files to prt1403 and give them each a seperatorpage with file number, the files have to be separated with a file separator (FS) character. One can use the following command to put FS characters in the stdin stream:
+
+    (cat example1.txt; echo -ne '\x1C'; cat example2.txt; echo -ne '\x1C'; cat example3.txt) | prt1403 -e -o example.pdf -
+
+To get input from the stdin stream and send output to the stdout stream, one can use the command:
+
+    ... | prt1403 -o - - | ...
+
+### Print multiple listings from a file
+
+It is possible to print multiple listings, each with their own separator page and number from a single file. In that case, each listing has to be separated from the next listing with a file separator (FS, 0x1C) character. An example can be found at tests/testIn/test5.asc
 
 ### License
 
