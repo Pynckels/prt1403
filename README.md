@@ -6,6 +6,8 @@ Print a text file to PDF in IBM 1403 retro style
 
 Examples of what can be done with prt1403 can be found at https://github.com/Pynckels/prt1403/tree/main/tests/testOut
 
+The commands to create the examples can be found at https://github.com/Pynckels/prt1403/blob/main/tests/runtests.sh
+
 ### Note
 
 This is a work in progress, constructive comments are appreciated.
