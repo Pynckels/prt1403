@@ -4,6 +4,8 @@ Print a text file to PDF in IBM 1403 retro style
 
 ![Fortran source code example](tests/testOut/test2.png)
 
+Examples of what can be done with prt1403 can be found at https://github.com/Pynckels/prt1403/tree/main/tests/testOut
+
 ### Note
 
 This is a work in progress, constructive comments are appreciated.
