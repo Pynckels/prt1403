@@ -24,7 +24,7 @@ import tempfile
 
 #------------------------------------------------------------------------------------------
 
-__VERSION__  = '1.1'
+__VERSION__  = '1.2'
 
 BLUE_DARK    = {'R': 65, 'G':182, 'B':255}                          # Blue banded paper
 BLUE_LIGHT   = {'R':214, 'G':239, 'B':255}
@@ -50,9 +50,9 @@ PAGE_SMALL   = [ 684, 792,  82, 66]                                 #  9.5 inch 
 PAGE_MEDIUM  = [ 864, 792, 107, 66]                                 # 12.0 inch x 11 inch, 100 chars/line, 66 lines
 PAGE_WIDE    = [1044, 792, 132, 66]                                 # 14.5 inch x 11 inch, 132 chars/line, 66 lines
 
-FONT1403     = ['IBM140310Pitch-Regular-MRW.ttf', 10, '#$%*+,-./0123456789@ABCDEFGHIJKLMNOPQRSTUVWXYZ']
-FONTMONO     = ['IBMPlexMono-Regular.ttf'       , 12, None]
-FONTOTHER    = [''                              , 10, None]
+FONT1403     = ['IBM140310Pitch-Regular-MRW.ttf', 10, '#$%*+,-./0123456789@ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'FONT1403' ]
+FONTMONO     = ['IBMPlexMono-Regular.ttf'       , 12, None,                                             'FONTMONO' ]
+FONTOTHER    = [''                              , 10, None,                                             'FONTOTHER']
 fontPath     = ''                                                   # Path to temporary file if using internal font
 
 #------------------------------------------------------------------------------------------
@@ -81,53 +81,71 @@ def change_invalid_characters(inStr, font):
 
 #------------------------------------------------------------------------------------------
 
-def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages):
+def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font):
 
     '''
     Create the contents of a separator page
     '''
 
-    sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
+    def print_large_font(sp, base, text, largeFont):
+        ''' Print text in sp at base with large font '''
+        for line in range(0,10):
+            for char in text.strip():
+                sp[base+line] += largeFont[char][line] + ' '
+        infoWidth = max(len(line) for line in sp[base:base+10])
+        for line in range(0,10):
+            sp[base+line] = sp[base+line][:-1]
+            sp[base+line] = ' ' * ((pageWidth-infoWidth) // 2 ) + sp[base+line]
+        return sp
 
-    sp[4] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
-            ' ' * ( size[2] -71 ) + 'PAGE: 0000'
-
-    sp[10] = 'DATE   : ' + date
-    sp[11] = 'USER   : ' + userId
-    sp[12] = 'JOB    : ' + jobId
-    sp[13] = 'FILE   : ' + inFile
-    sp[14] = 'PAGES  : ' + str(nrPages)
-    sp[15] = 'HOST   : ' + socket.gethostname()
-    sp[16] = 'SYSTEM : ' + platform.system() + '(' + platform.release() + ')'
-    infoLength = max(len(line) for line in sp[7:])
-    sp[ 9] = '-' * infoLength
-    sp[17] = '-' * infoLength
-
-    for i in range(9,18):
-        sp[i] = sp[i].upper()                                       # To be on the safe side (with fonts)
-        sp[i] = ' ' * ((size[2]-infoLength) // 2 ) + sp[i]          # Center the contents of all the info lines
-
-    fontLzm   = base64.b64decode(SEPFONT)                           # Load character dictionary
+    fileNum   = str(fileNr).rjust(3,'0')                            # Get file number as string (fill with 0's)
+    fontLzm   = base64.b64decode(SEPFONT)                           # Load large character dictionary
     fontJson  = lzma.decompress(fontLzm)
     fontDict  = json.loads(fontJson)
+    pageWidth = size[2]                                             # Get page width in characters
 
-    base  = 25                                                      # Fill in UserID
-    for line in range(0,10):
-        for char in userId.strip():
-            sp[base+line] += fontDict[char][line] + ' '
-    infoLength = max(len(line) for line in sp[base:base+10])
-    for line in range(0,10):
-        sp[base+line] = sp[base+line][:-1]
-        sp[base+line] = ' ' * ((size[2]-infoLength) // 2 ) + sp[base+line]
+    if (font is FONTOTHER):                                         # Get font name
+        fontName = font[0]
+    else:
+        fontName = font[3]
 
-    base  = 38                                                      # Fill in UserID
-    for line in range(0,10):
-        for char in jobId.strip():
-            sp[base+line] += fontDict[char][line] + ' '
-    infoLength = max(len(line) for line in sp[base:base+10])
-    for line in range(0,10):
-        sp[base+line] = sp[base+line][:-1]
-        sp[base+line] = ' ' * ((size[2]-infoLength) // 2 ) + sp[base+line]
+    sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
+
+    sp[ 0] = '*' * pageWidth                                        # Fill in the blanks...
+    sp[ 1] = ('-  ' * (pageWidth // 3 - 1) + '-').center(pageWidth)
+    sp[ 2] = '*' * pageWidth
+    sp[ 3] = '*' * pageWidth
+    sp[ 4] = '*' * pageWidth
+    sp[ 5] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
+
+    sp[ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + inFile
+    sp[10] = jobId + '  ' + userId
+    sp[11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
+    sp[12] = jobId + '  ' + userId
+    sp[13] = jobId + '  ' + userId + '   FILE= ' +  str(fileNr ).rjust(3,'0') + \
+                                     '   PAGES= ' + str(nrPages).rjust(4,'0') + \
+                                     '   LINES= ' + str(nrLines).rjust(6,'0')
+    sp[14] = jobId + '  ' + userId
+    sp[15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
+    sp[16] = jobId + '  ' + userId
+    sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + os.getlogin()
+    sp[18] = jobId + '  ' + userId
+    sp[19] = jobId + '  ' + userId + '   SYSUSER= ' + os.getlogin()
+    sp[20] = jobId + '  ' + userId
+    sp[21] = jobId + '  ' + userId + '   FORM= STANDARD'
+    sp[22] = jobId + '  ' + userId
+    sp[23] = jobId + '  ' + userId + '   CHAR= ' + fontName
+
+    sp = print_large_font(sp, 27, userId,  fontDict)                # Print UserID in large font
+    sp = print_large_font(sp, 39, jobId,   fontDict)                # Print JobID  in large font
+    sp = print_large_font(sp, 51, fileNum, fontDict)                # Print file number in large font
+
+    sp[63] = '*' * pageWidth
+    sp[64] = '*' * pageWidth
+    sp[65] = '*' * pageWidth
+
+    for i in range(0,66):
+        sp[i] = sp[i].upper()                                        # To be on the safe side (with glyphs)
 
     return sp
 
@@ -328,7 +346,7 @@ def prt1403_print(
 
     date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
-           ' ' * ( size[2] -71 ) + 'PAGE: '
+           ' ' * ( size[2] -72 ) + 'PAGE: '
     page = 1
     fileNr = 1
 
@@ -339,13 +357,14 @@ def prt1403_print(
     with open(inFile, 'r') as inf:
         lines = inf.readlines()
 
-    nrPages = len(lines) // linesPerPage + 1
+    nrLines = len(lines)
+    nrPages = nrLines // linesPerPage + 1
 
     pdf = FPDF(orientation='P', unit='pt', format=size)             # Create fpdf environment
     prt1403_add_font(pdf, font)                                     # Load required font
 
     if separator:                                                   # Print separator page
-        text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages)
+        text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
         prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
 
     while len(lines):                                               # Print contents
@@ -483,18 +502,18 @@ def main():
 
 #------------------------------------------------------------------------------------------
 
-SEPFONT = """/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4BM2AqNdAD2IhCIh3pTod1OnT8nY4vr2Dz4e9Yl5EGt81H
+SEPFONT = """/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4BM2ArtdAD2IhCIh3pTod1OnT8nY4vr2Dz4e9Yl5EGt81H
 B81M0NDeOkhEzxK7yAElFN1uaU/i4Dqu4gyD56L3B5KL6gPeQ4nvOai+69PSPBX1RwcQcAzBkCK89MlHS5iJwe+ETgt
 QXeMrfWd06R4lQnlCGsijH1WcHjD4zGak0//ckq3dr6PlLc1nNpyy7sCwxopilPXp1qaiDLxeiuoB5uE/tj9E+XOV7Q
-JGoZ5lgZAIayXJm3kKyi2UwZP8XlIpWxl6kfP6GQq3hN0gdSBp9spM3kS3Co37HMAhVAGTvsMJI0aJc5R6B4YRsBHFr
-N5Y8iHGQooHt562qohwoZHzHtLoduzynG1VPyrx1V1Ie5+rfhsTrpTnNQgEPdozTcKuHvrYFYLRizBW3bA/fyzhoIxk
-XMwEDdkXAq/O+xytc67w/jIrPr26ZKUFpj2+vopSvUtDvViW9BArzPXyHnMW0KnQMgB6eQSjw6Hv3JZInvwXnjtKesv
-0yJ6kX6tUSjpo1UC/eMVAcafA/80YolBIBbBuqklsLmVmRyWAS8VgxiTHJi3Zc9mtaFXPQLOyhuPx0OYE1NI4DYWm5/
-y6K6qxUswtaCzM5vZR7RzqgEfmdZsvbKwSJfnxZVKrMeU7VfzP7spQ9yYYuEm1gMvxGdi6YHhvpRd7VdlIV+HhxlmXl
-BkNxHboq4jlb3cvMRZvE4frkOWZqyM3pB/nyhSLMg45oUfuRr1KJdj4ml2BGRcyLz70c5bpV54z58J7P+vR6vYp2gzO
-q6XRHhxN0snKvJdQSQYjPXgBJNGsJUQmTzscp1Ae5XOLwMUflGmb8tya9OSXWXnOBo2GNH+IB0LXAWvbdrneDjBwC98
-pB4U8ZMuOM7jJ0UTSMrGeuarOxiokrE4ePZfsVC135jAAAA5aqNhQ9ttNcAAb8FtyYAAHy2TFyxxGf7AgAAAAAEWVo=
-"""
+JGoZ5lgZAIayXJm3kKyi2UwZP8XlIpWxl6kfP6GQq3hN0gdSBo1bz/t0ndCGY4ZKTkp4LDYQX6XbWKyrMkBjilwX/H+
+fbZHMx4iyLSzIhIUV95e5CA5ymW2OD8LLMU3sk5VmVFn8MKFTXMDvuieW3CzVIHCaj5uNl4lzn/586YoW0FV9cfOZxp
+haMWE8fILCTrhVC5Hla58mCUqa1erOTQ1bTEmLm/2YXRKKHA2E6JyNVonFpUVhuin0Du0CPR2xwTQsxnLLAKYQapbMZ
+uorZprKYAxf2InR/r6a6Vxr5al1rp3Nxob4zjYJuFM+S26o1g+6M82Q8Kx0bV1bv57tX9BXPI9MktZ31+eUlil9tRKv
+4ZpjLhTnxIHvTTNT/TJBhool1pHjlrYB8fQX5QNCb61aUD7cxoEkF7H1c/Wv0RctIp1sXr+McDvdXPn//1VJcXM9I8p
+scHNdD4Yc+B6dPSlXi23rFsX/DzE80MHT+v2/V7RD7p12ZMHg9vy/JrEJUHGlmJKDUi68I+84A8fGXEsVBi239qjKMm
+BKSs8XoSA+uUeEJb7cVofmXmz3vSd6Qf5uDwBjsF3/Qs7hKAEjut+Ofv3c/FPf5FpRCEOJyEvknBKC/p29X0+Qbr1Pc
+t0pyF1y8IZllhteBRSwFpzLVtv+mRv5/ZErSXpJxo1F9vzO9mfqoCmylaWxWitrhuIJLh+VzM2YAAAAVO19Szm8gW8A
+AdcFtyYAAEs767ixxGf7AgAAAAAEWVo="""
 
 #------------------------------------------------------------------------------------------
 

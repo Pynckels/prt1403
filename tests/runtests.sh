@@ -1,7 +1,5 @@
 #! /usr/bin/bash
 
-set -x
-
 ../prt1403 -y    -j TEST1   -u PRT1403 -s WIDE   -c GREEN -o testOut/test1.pdf testIn/test1.txt
 ../prt1403 -y    -j PI      -u FRTRN77 -s SMALL  -c BLUE  -o testOut/test2.pdf testIn/test2.f77
 ../prt1403 -y    -j TEST3   -u PRT1403 -s MEDIUM -c GRAY  -o testOut/test3.pdf testIn/test3.txt
