@@ -339,7 +339,8 @@ def prt1403_print(
     userId      = 'USERID'  ,
     jobId       = 'JOBID'   ,
     header      = True      ,
-    separator   = False
+    separator   = False     ,
+    linenum     = False
     ):
 
     '''
@@ -373,6 +374,11 @@ def prt1403_print(
         nrLines = len(file)
         nrPages = nrLines // linesPerPage + 1
 
+        if linenum:                                                 # Add line numbers
+            for nr in range(nrLines):
+                lineNum = nr + 1
+                file[nr] = str( f"{lineNum:06d}  ") + file[nr]
+
         if separator:                                               # Print separator page
             text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
@@ -385,6 +391,7 @@ def prt1403_print(
                 text = text + [' ', ' ']
             else:
                 text = []
+
             text = text + file[:linesPerPage]                       # Print data
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
             file = file[linesPerPage:]                              # Remove printed lines
@@ -478,6 +485,7 @@ def main():
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-l', '--linenum',                            action='store_true',                          default=False,         help='Print line numbers.')
     parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
     parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
     parser.add_argument('-p', '--points',                             type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
@@ -527,7 +535,8 @@ def main():
         userId      = userId                         ,
         jobId       = jobId                          ,
         header      = not args.noheader              ,
-        separator   = args.separator
+        separator   = args.separator                 ,
+        linenum     = args.linenum
     )
 
 #------------------------------------------------------------------------------------------

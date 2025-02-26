@@ -14,3 +14,4 @@
 ../prt1403 -y -e -u PYNCKELS -j PERFORM -o testOut/test5.pdf - < testIn/test5.asc
 (cat testIn/test6.py; echo -n -e '\x1C'; cat testIn/test6.f90; echo -n -e '\x1C'; cat testIn/test6.c) | ../prt1403 -y -e -u MAINT -j PERFORM -o testOut/test6_1.pdf -
 (cat testIn/test4.f90; echo -n -e '\x1C'; cat testIn/test6.f90) | ../prt1403 -y -e -u OPERATOR -j FORTRAN -o testOut/test6_2.pdf -
+../prt1403 -y -l -j MATMUL  -u PASCAL  -s MEDIUM -o testOut/test7.pdf testIn/test7.pas

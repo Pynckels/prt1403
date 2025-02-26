@@ -39,32 +39,30 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-e] [-f FONT] [-j jobID] [-n] [-o <Output file>] [-p POINTS]
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-e] [-f FONT] [-j jobID] [-l] [-n] [-o <Output file>] [-p POINTS]
                    [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
                    <Input file>
-    
+
     Print a text file to PDF in IBM 1403 retro style
-    
+
     positional arguments:
       <Input file>          File to process or - for stdin.
-    
+
     options:
       -h, --help            show this help message and exit
-      -c {BLUE,GRAY,GREEN,WHITE}, --color {BLUE,GRAY,GREEN,WHITE}
+      -c, --color {BLUE,GRAY,GREEN,WHITE}
                             Color of form preprint. Text color is black.
       -e, --separator       Print separator page.
-      -f FONT, --font FONT  Choose between FONT1403, FONTMONO or an installed font.
-      -j jobID, --jobid jobID
-                            Job identifier (1 to 8 alphanumeric characters).
+      -f, --font FONT       Choose between FONT1403, FONTMONO or an installed font.
+      -j, --jobid jobID     Job identifier (1 to 8 alphanumeric characters).
+      -l, --linenum         Print line numbers.
       -n, --noheader        Disable printing of page headers.
-      -o <Output file>, --outfile <Output file>
-                            Output file name or - for stdout.
-      -p POINTS, --points POINTS
-                            Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.
-      -s {SMALL,MEDIUM,WIDE}, --size {SMALL,MEDIUM,WIDE}
+      -o, --outfile <Output file>
+                            Output file name.
+      -p, --points POINTS   Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.
+      -s, --size {SMALL,MEDIUM,WIDE}
                             Paper width 9.5", 12" or 14.5". Paper height is 11"
-      -u userID, --userid userID
-                            User identifier (1 to 8 alphanumeric characters).
+      -u, --userid userID   User identifier (1 to 8 alphanumeric characters).
       -v, --version         Show program version and exit.
       -y, --overwrite       Overwrite output file.
 
