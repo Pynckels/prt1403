@@ -83,7 +83,7 @@ def change_invalid_characters(inStr, font):
 
 #------------------------------------------------------------------------------------------
 
-def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font):
+def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font):
 
     '''
     Create the contents of a separator page
@@ -111,6 +111,15 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nr
     else:
         fontName = font[3]
 
+    if size == PAGE_SMALL:                                          # Get form name
+        formName = 'SMALL'
+    elif size == PAGE_MEDIUM:
+        formName = 'MEDIUM'
+    elif size == PAGE_WIDE:
+        formName = 'WIDE'
+    else:
+        formName = 'SPECIAL'
+
     sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
 
     sp[ 0] = '*' * pageWidth                                        # Fill in the blanks...
@@ -120,7 +129,7 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nr
     sp[ 4] = '*' * pageWidth
     sp[ 5] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
 
-    sp[ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + inFile
+    sp[ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + sepFileName
     sp[10] = jobId + '  ' + userId
     sp[11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
     sp[12] = jobId + '  ' + userId
@@ -132,7 +141,7 @@ def create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nr
     sp[16] = jobId + '  ' + userId
     sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + os.getlogin()
     sp[18] = jobId + '  ' + userId
-    sp[19] = jobId + '  ' + userId + '   FORM= STANDARD'
+    sp[19] = jobId + '  ' + userId + '   FORM= ' + formName
     sp[20] = jobId + '  ' + userId
     sp[21] = jobId + '  ' + userId + '   CHAR= ' + fontName
     sp[22] = jobId + '  ' + userId
@@ -333,14 +342,15 @@ def prt1403_print(
     inFile                  ,
     outFile                 ,
     font                    ,
-    size        = PAGE_WIDE ,
+    sepFileName             ,
     color_form  = GREEN     ,
     color_holes = GRAY      ,
-    userId      = 'USERID'  ,
-    jobId       = 'JOBID'   ,
-    header      = True      ,
     separator   = False     ,
-    linenum     = False
+    jobId       = 'JOBID'   ,
+    linenum     = False     ,
+    header      = True      ,
+    size        = PAGE_WIDE ,
+    userId      = 'USERID'
     ):
 
     '''
@@ -361,7 +371,7 @@ def prt1403_print(
     else:                                                           # Input from file
         with open(inFile, 'rb') as inf:
             inChars = inf.read().decode('utf-8')
-    
+
     inChars = inChars.replace('\x19', '')                           # Remove eventual end of medium (EM)
     files = inChars.split('\x1C')                                   # Split at file separator (FS)
     files = [ file.split('\n') for file in files]                   # Make list of lists
@@ -370,7 +380,7 @@ def prt1403_print(
     prt1403_add_font(pdf, font)                                     # Load required font
 
     fileNr = 1
-    for file in files:        
+    for file in files:
         nrLines = len(file)
         nrPages = nrLines // linesPerPage + 1
 
@@ -380,7 +390,7 @@ def prt1403_print(
                 file[nr] = str( f"{lineNum:06d}  ") + file[nr]
 
         if separator:                                               # Print separator page
-            text = create_separator_page(inFile, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
+            text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
 
         page = 1
@@ -431,11 +441,11 @@ def main():
             except FileNotFoundError:
                 print(parser.format_usage().strip())
                 print(f'{progName}: error: The file {font_path} does not exist.')
-                quit()            
+                quit()
             except:
                 print(parser.format_usage().strip())
                 print(f'{progName}: error: The file {font_path} is not a valid TrueType font file.')
-                quit()            
+                quit()
 
     def id_validator(value):
         ''' Check if the value is between 1 and 8 characters long and is alphanumeric. '''
@@ -484,6 +494,7 @@ def main():
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
+    parser.add_argument('-i', '--filename',  metavar='NAME',          type=str,                                     default='',            help='Override file name/path on separator page.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
     parser.add_argument('-l', '--linenum',                            action='store_true',                          default=False,         help='Print line numbers.')
     parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
@@ -520,7 +531,12 @@ def main():
     else:
         inFile = args.infile
 
-    if args.outfile == '-':                                         # Normalize input file name
+    if args.filename == '':                                         # Set file name on separator page
+        sepFileName = inFile
+    else:
+        sepFileName = args.filename
+
+    if args.outfile == '-':                                         # Normalize output file name
         outFile = 'stdout'
     else:
         outFile = args.outfile
@@ -529,14 +545,15 @@ def main():
         inFile                                       ,
         outFile                                      ,
         font        = font                           ,
-        size        = globals()['PAGE_' + args.size] ,
+        sepFileName = sepFileName                    ,
         color_form  = globals()[args.color]          ,
         color_holes = GRAY                           ,
-        userId      = userId                         ,
-        jobId       = jobId                          ,
-        header      = not args.noheader              ,
         separator   = args.separator                 ,
-        linenum     = args.linenum
+        jobId       = jobId                          ,
+        linenum     = args.linenum                   ,
+        header      = not args.noheader              ,
+        size        = globals()['PAGE_' + args.size] ,
+        userId      = userId        
     )
 
 #------------------------------------------------------------------------------------------
