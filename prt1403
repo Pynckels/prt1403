@@ -357,6 +357,21 @@ def prt1403_print(
     Print the text in inFile. This file does not contain an ASA (page formatting) column
     '''
 
+    def split_on_0x0C(lines):
+        ''' Split each line containing 0x0C (FF) into three lines, isolating 0x0C '''
+        result = []
+        for l in lines:
+            if '\x0C' in l:                                         # Check if '\x0C' exists in the string
+                parts = l.split('\x0C')                             # Split l at each occurrence of '\x0C'
+                if parts[0] != '':                                  # Start with part before '0x0C' if not empty
+                    result.append(parts[0])
+                for part in parts[1:]:                              # Add '\x0C' between each pair of parts
+                    result.append('\x0C')
+                    result.append(part)
+            else:
+                result.append(l)
+        return result
+
     date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
            ' ' * ( size[2] -72 ) + 'PAGE: '
@@ -381,31 +396,45 @@ def prt1403_print(
 
     fileNr = 1
     for file in files:
-        nrLines = len(file)
-        nrPages = nrLines // linesPerPage + 1
 
-        if linenum:                                                 # Add line numbers
-            for nr in range(nrLines):
-                lineNum = nr + 1
-                file[nr] = str( f"{lineNum:06d}  ") + file[nr]
+        file = split_on_0x0C(file)                                  # Split lines containing form feed (FF = \x0C)
+
+        nrFormFeed = sum(1 for line in file if line == '\x0C')      # Number of explicit form feed (FF) chars
+        nrLines = len(file) - nrFormFeed                            # Number of lines (exclude explicit FF chars)
+        nrPages = (nrLines // linesPerPage + 1) + nrFormFeed        # Number of pages (each FF char adds a page)
 
         if separator:                                               # Print separator page
             text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
 
+        if linenum:                                                 # Add line numbers (skip form feed lines)
+            lineNum = 1
+            for i in range( len(file) ):
+                if file[i] != '\x0C':
+                    file[i] = str( f"{lineNum:06d}  ") + file[i]
+                    lineNum += 1
+
         page = 1
         while len(file):                                            # Print contents
-            if header:                                              # Print header
+            if header:                                              # Print header ...
                 text = [' ', ' ', ' ']
                 text = text + [head + f'{page:04}']
                 text = text + [' ', ' ']
-            else:
+            else:                                                   # ... or don't
                 text = []
 
-            text = text + file[:linesPerPage]                       # Print data
+            line = 0                                                # Get data for current page
+            while line < len(file) and line < linesPerPage and file[line] != '\x0C':
+                text.append( file[line] )
+                line += 1
+
+            if line < len(file) and file[line] == '\x0C':           # Skip eventual form feed line
+                line += 1
+
+            file = file[line:]                                      # Remove lines of current page
+
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
-            file = file[linesPerPage:]                              # Remove printed lines
-            page += 1                                               # Update page status variables
+            page += 1                                               # Update page status variable
 
         fileNr += 1                                                 # Update file status variables
 
