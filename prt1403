@@ -14,6 +14,7 @@ from fpdf            import FPDF
 
 import argparse
 import base64
+import getpass
 import json
 import lzma
 import os
@@ -139,7 +140,7 @@ def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPage
     sp[14] = jobId + '  ' + userId
     sp[15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
     sp[16] = jobId + '  ' + userId
-    sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + os.getlogin()
+    sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + getpass.getuser()
     sp[18] = jobId + '  ' + userId
     sp[19] = jobId + '  ' + userId + '   FORM= ' + formName
     sp[20] = jobId + '  ' + userId
