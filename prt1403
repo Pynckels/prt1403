@@ -58,9 +58,9 @@ FONTMONO     = ['IBMPlexMono-Regular.ttf'       , 12, None,                     
 FONTOTHER    = [''                              , 10, None,                                             'FONTOTHER']
 fontPath     = ''                                                   # Path to temporary file if using internal font
 
-DATEFMT_YMD  = '%Y-%m-%d %H:%M:%S'
-DATEFMT_MDY  = '%m-%d-%Y %H:%M:%S'
 DATEFMT_DMY  = '%d-%m-%Y %H:%M:%S'
+DATEFMT_MDY  = '%m-%d-%Y %H:%M:%S'
+DATEFMT_YMD  = '%Y-%m-%d %H:%M:%S'
 
 #------------------------------------------------------------------------------------------
 
@@ -527,6 +527,7 @@ def main():
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process or - for stdin.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
+    parser.add_argument('-d', '--datefmt',                            choices=['DMY', 'MDY', 'YMD'],                default='DMY',         help='Date format on header.')
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-i', '--filename',  metavar='NAME',          type=str,                                     default='',            help='Override file name/path on separator page.')
@@ -537,7 +538,6 @@ def main():
     parser.add_argument('-p', '--points',                             type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
     parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
     parser.add_argument('-u', '--userid',    metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
-    parser.add_argument('-d', '--datefmt',                            choices=['YMD', 'MDY', 'DMY'],                default='DMY',         help='Date format on header"')
     parser.add_argument('-v', '--version',   action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__),  help='Show program version and exit.')
     parser.add_argument('-y', '--overwrite',                          action='store_true',                          default=False,         help='Overwrite output file.')
 
@@ -590,7 +590,7 @@ def main():
         header      = not args.noheader                   ,
         size        = globals()['PAGE_' + args.size]      ,
         datefmt     = globals()['DATEFMT_' + args.datefmt],
-        userId      = userId        
+        userId      = userId
     )
 
 #------------------------------------------------------------------------------------------

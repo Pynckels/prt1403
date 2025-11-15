@@ -39,8 +39,8 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-e] [-f FONT] [-i NAME] [-j jobID] [-l] [-n] [-o <Output file>]
-                   [-p POINTS] [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
+    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-d {YMD,MDY,DMY}] [-e] [-f FONT] [-i NAME] [-j jobID] [-l] [-n]
+                   [-o <Output file>] [-p POINTS] [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
                    <Input file>
 
     Print a text file to PDF in IBM 1403 retro style
@@ -52,6 +52,8 @@ This results in the following information.
       -h, --help            show this help message and exit
       -c, --color {BLUE,GRAY,GREEN,WHITE}
                             Color of form preprint. Text color is black.
+      -d, --datefmt {YMD,MDY,DMY}
+                            Date format on header.
       -e, --separator       Print separator page.
       -f, --font FONT       Choose between FONT1403, FONTMONO or an installed font.
       -i, --filename NAME   Override file name/path on separator page.

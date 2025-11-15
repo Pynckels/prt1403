@@ -19,3 +19,9 @@
 ../prt1403 -y -e -j FORMFEED -u PRT1403 -s SMALL  -l -o testOut/test9.pdf testIn/test9.txt
 ../prt1403 -y -e -j FORMFEED -u PRT1403 -s SMALL  -l -o testOut/testA_1.pdf testIn/testA.txt
 ../prt1403 -y -e -n                               -l -o testOut/testA_2.pdf testIn/testA.txt
+../prt1403 -y -d DMY -e -j FORMFEED -u PRT1403 -s SMALL  -l -o testOut/testB_1.pdf testIn/testA.txt
+../prt1403 -y -d MDY -e -j FORMFEED -u PRT1403 -s SMALL  -l -o testOut/testB_2.pdf testIn/testA.txt
+../prt1403 -y -d YMD -e -j FORMFEED -u PRT1403 -s SMALL  -l -o testOut/testB_3.pdf testIn/testA.txt
+../prt1403 -y -d DMY -e -j MATMUL   -u COBOL   -s SMALL  -l -i /COBOL/MATH/MATMUL.COB -o testOut/testB_4.pdf testIn/test8.cob
+../prt1403 -y -d MDY -e -j MATMUL   -u COBOL   -s SMALL  -l -i /COBOL/MATH/MATMUL.COB -o testOut/testB_5.pdf testIn/test8.cob
+../prt1403 -y -d YMD -e -j MATMUL   -u COBOL   -s SMALL  -l -i /COBOL/MATH/MATMUL.COB -o testOut/testB_6.pdf testIn/test8.cob
