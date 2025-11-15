@@ -58,6 +58,10 @@ FONTMONO     = ['IBMPlexMono-Regular.ttf'       , 12, None,                     
 FONTOTHER    = [''                              , 10, None,                                             'FONTOTHER']
 fontPath     = ''                                                   # Path to temporary file if using internal font
 
+DATEFMT_YMD  = '%Y-%m-%d %H:%M:%S'
+DATEFMT_MDY  = '%m-%d-%Y %H:%M:%S'
+DATEFMT_DMY  = '%d-%m-%Y %H:%M:%S'
+
 #------------------------------------------------------------------------------------------
 
 def change_invalid_characters(inStr, font):
@@ -351,6 +355,7 @@ def prt1403_print(
     linenum     = False     ,
     header      = True      ,
     size        = PAGE_WIDE ,
+    datefmt     = 'DMY'     ,
     userId      = 'USERID'
     ):
 
@@ -373,7 +378,7 @@ def prt1403_print(
                 result.append(l)
         return result
 
-    date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    date = datetime.now().strftime(datefmt)
     head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
            ' ' * ( size[2] -72 ) + 'PAGE: '
 
@@ -532,6 +537,7 @@ def main():
     parser.add_argument('-p', '--points',                             type=int,                                     default=12    ,        help='Size of font in points (e.g. 10). Not used for FONT1403 or FONTMONO.')
     parser.add_argument('-s', '--size',                               choices=['SMALL', 'MEDIUM', 'WIDE'],          default='WIDE',        help='Paper width 9.5", 12" or 14.5". Paper height is 11"')
     parser.add_argument('-u', '--userid',    metavar='userID',        type=id_validator,                            default='NONE',        help='User identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-d', '--datefmt',                            choices=['YMD', 'MDY', 'DMY'],                default='DMY',         help='Date format on header"')
     parser.add_argument('-v', '--version',   action='version',        version='%(prog)s (version {version})'.format(version=__VERSION__),  help='Show program version and exit.')
     parser.add_argument('-y', '--overwrite',                          action='store_true',                          default=False,         help='Overwrite output file.')
 
@@ -572,17 +578,18 @@ def main():
         outFile = args.outfile
 
     prt1403_print(                                                  # Hit the road...
-        inFile                                       ,
-        outFile                                      ,
-        font        = font                           ,
-        sepFileName = sepFileName                    ,
-        color_form  = globals()[args.color]          ,
-        color_holes = GRAY                           ,
-        separator   = args.separator                 ,
-        jobId       = jobId                          ,
-        linenum     = args.linenum                   ,
-        header      = not args.noheader              ,
-        size        = globals()['PAGE_' + args.size] ,
+        inFile                                            ,
+        outFile                                           ,
+        font        = font                                ,
+        sepFileName = sepFileName                         ,
+        color_form  = globals()[args.color]               ,
+        color_holes = GRAY                                ,
+        separator   = args.separator                      ,
+        jobId       = jobId                               ,
+        linenum     = args.linenum                        ,
+        header      = not args.noheader                   ,
+        size        = globals()['PAGE_' + args.size]      ,
+        datefmt     = globals()['DATEFMT_' + args.datefmt],
         userId      = userId        
     )
 
