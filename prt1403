@@ -201,7 +201,7 @@ def prt1403_add_font(pdf, font):
         if not (font is FONT1403) and not (font is FONTMONO):       # Security measure to prevent invalid font
             font = FONTMONO
                                                                     # Setup prt1403 font, load from variable
-        with tempfile.NamedTemporaryFile(delete=False, delete_on_close=False, suffix='.ttf') as tf:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.ttf') as tf:
             tf.write(font[0])
             fontPath = tf.name
             pdf.add_font('prt1403Font', '', fontPath)
