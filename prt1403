@@ -352,11 +352,13 @@ def prt1403_print(
     color_holes = GRAY      ,
     separator   = False     ,
     jobId       = 'JOBID'   ,
+    asaCarriageControl = False, 
     linenum     = False     ,
     header      = True      ,
     size        = PAGE_WIDE ,
     datefmt     = 'DMY'     ,
-    userId      = 'USERID'
+    userId      = 'USERID'  ,
+    
     ):
 
     '''
@@ -404,7 +406,7 @@ def prt1403_print(
     for file in files:
 
         file = split_on_0x0C(file)                                  # Split lines containing form feed (FF = \x0C)
-
+        
         nrFormFeed = sum(1 for line in file if line == '\x0C')      # Number of explicit form feed (FF) chars
         nrLines = len(file) - nrFormFeed                            # Number of lines (exclude explicit FF chars)
         nrPages = (nrLines // linesPerPage + 1) + nrFormFeed        # Number of pages (each FF char adds a page)
@@ -417,7 +419,10 @@ def prt1403_print(
             lineNum = 1
             for i in range( len(file) ):
                 if file[i] != '\x0C':
-                    file[i] = str( f"{lineNum:06d}  ") + file[i]
+                    if asaCarriageControl:
+                        file[i] = file[i][0] + str( f"{lineNum:06d}  ") + file[i][1:] # move ASA char to front
+                    else:
+                        file[i] = str( f"{lineNum:06d}  ") + file[i]
                     lineNum += 1
 
         page = 1
@@ -430,9 +435,30 @@ def prt1403_print(
                 text = []
 
             line = 0                                                # Get data for current page
-            while line < len(file) and line < linesPerPage and file[line] != '\x0C':
-                text.append( file[line] )
-                line += 1
+            asaCC = None
+            printerLineNum = 0
+           
+            while line < len(file) and printerLineNum < linesPerPage and file[line] != '\x0C' and asaCC != '1':
+                lineContents = file[line]
+                printerLineNum += 1
+                if asaCarriageControl:
+                    if len(file[line]) > 1:
+                        asaCC = file[line][0]
+                        if asaCC == '0':
+                            #text.append("\n")
+                            text = text + [' ']
+                            printerLineNum += 1
+                        if asaCC == '-':
+                            text = text + [' ', ' ']
+                            printerLineNum += 2
+                            #text.append("\n \n")
+                        
+                        lineContents = lineContents[1:]
+                if asaCC != '1':                                    # only add the contents of the current line to the page if it is not ASA form feed before
+                    text.append( lineContents )
+                    line += 1
+                else:
+                    file[line] = ' ' + lineContents                 # overlay the ASA form feed so this line will print at the top of the new page. Don't incr line
 
             if line < len(file) and file[line] == '\x0C':           # Skip eventual form feed line
                 line += 1
@@ -526,6 +552,7 @@ def main():
     parser = argparse.ArgumentParser(description='Print a text file to PDF in IBM 1403 retro style')
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process or - for stdin.')
+    parser.add_argument('-a', '--asaCarriageControl',                 action='store_true',                          default=False,         help='First char in line is ASA carriage control.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
     parser.add_argument('-d', '--datefmt',                            choices=['DMY', 'MDY', 'YMD'],                default='DMY',         help='Date format on header.')
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
@@ -586,6 +613,7 @@ def main():
         color_holes = GRAY                                ,
         separator   = args.separator                      ,
         jobId       = jobId                               ,
+        asaCarriageControl     = args.asaCarriageControl  ,
         linenum     = args.linenum                        ,
         header      = not args.noheader                   ,
         size        = globals()['PAGE_' + args.size]      ,

@@ -1,0 +1,457 @@
+                                                     MM        MM  FFFFFFFFFFFF       11
+                                                    MMM      MMM  FFFFFFFFFFFF      111
+                                                   MMMM    MMMM  FF               1111
+                                                  MM MM  MM MM  FF                 11
+                                                 MM  MMMM  MM  FF                 11
+                                                MM   MM   MM  FFFFFFFF           11
+                                               MM        MM  FFFFFFFF           11
+                                              MM        MM  FF                 11
+                                             MM        MM  FF                 11
+                                            MM        MM  FF                 11
+                                           MM        MM  FF             1111111111
+                                          MM        MM  FF             1111111111
+-                   SSSSSSSSSS    6666666666         444                                                AAAAAAAAAA
+                   SSSSSSSSSSSS  666666666666       4444                                               AAAAAAAAAAAA
+                   SS        SS  66        66      44 44                                               AA        AA
+                   SS            66               44  44                                               AA        AA
+                   SSS           66              44   44                                               AA        AA
+                    SSSSSSSSS    66666666666    44444444444                                            AAAAAAAAAAAA
+                     SSSSSSSSS   666666666666  444444444444                                            AAAAAAAAAAAA
+                            SSS  66        66         44                                               AA        AA
+                             SS  66        66         44                                               AA        AA
+                   SS        SS  66        66         44                                               AA        AA
+                   SSSSSSSSSSSS  666666666666         44                                               AA        AA
+                    SSSSSSSSSS    6666666666          44                                               AA        AA
+-                 PPPPPPPPPPP   RRRRRRRRRRR    IIIIIIIIII   MM        MM  FFFFFFFFFFFF  OOOOOOOOOOOO  RRRRRRRRRRR   HH        HH
+                 PPPPPPPPPPPP  RRRRRRRRRRRR   IIIIIIIIII   MMM      MMM  FFFFFFFFFFFF  OOOOOOOOOOOO  RRRRRRRRRRRR  HH        HH
+                PP        PP  RR        RR       II       MMMM    MMMM  FF            OO        OO  RR        RR  HH        HH
+               PP        PP  RR        RR       II       MM MM  MM MM  FF            OO        OO  RR        RR  HH        HH
+              PP        PP  RR        RR       II       MM  MMMM  MM  FF            OO        OO  RR        RR  HH        HH
+             PPPPPPPPPPPP  RRRRRRRRRRRR       II       MM   MM   MM  FFFFFFFF      OO        OO  RRRRRRRRRRRR  HHHHHHHHHHHH
+            PPPPPPPPPPP   RRRRRRRRRRR        II       MM        MM  FFFFFFFF      OO        OO  RRRRRRRRRRR   HHHHHHHHHHHH
+           PP            RR    RR           II       MM        MM  FF            OO        OO  RR    RR      HH        HH
+          PP            RR     RR          II       MM        MM  FF            OO        OO  RR     RR     HH        HH
+         PP            RR      RR         II       MM        MM  FF            OO        OO  RR      RR    HH        HH
+        PP            RR       RR    IIIIIIIIII   MM        MM  FF            OOOOOOOOOOOO  RR       RR   HH        HH
+       PP            RR        RR   IIIIIIIIII   MM        MM  FF            OOOOOOOOOOOO  RR        RR  HH        HH
+-                    JJJJJJJJJJ       11        3333333333                                              AAAAAAAAAA
+                     JJJJJJJJJJ      111       333333333333                                            AAAAAAAAAAAA
+                         JJ         1111       33        33                                            AA        AA
+                         JJ           11                 33                                            AA        AA
+                         JJ           11                 33                                            AA        AA
+                         JJ           11              3333                                             AAAAAAAAAAAA
+                         JJ           11              3333                                             AAAAAAAAAAAA
+                         JJ           11                 33                                            AA        AA
+                   JJ    JJ           11                 33                                            AA        AA
+                   JJ    JJ           11       33        33                                            AA        AA
+                   JJJJJJJJ       1111111111   333333333333                                            AA        AA
+                    JJJJJJ        1111111111    3333333333                                             AA        AA
+ 
+ ****A  START  JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13  START  A****
+ ****A  START  JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13  START  A****
+ ****A  START  JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13  START  A****
+ ****A  START  JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13  START  A****
+1                                                  J E S 2   J O B   L O G
+ 
+ 
+ 21.17.20 JOB   13  $HASP373 PRIMFORH STARTED - INIT  1 - CLASS A - SYS TK4-
+ 21.17.20 JOB   13  IEF403I PRIMFORH - STARTED - TIME=21.17.20
+ 21.17.20 JOB   13  IEFACTRT - Stepname  Procstep  Program   Retcode
+ 21.17.20 JOB   13  PRIMFORH   PRIMES    FORT      IEKAA00   RC= 0000
+ 21.17.21 JOB   13  PRIMFORH   PRIMES    GO        LOADER    RC= 0000
+ 21.17.21 JOB   13  IEF404I PRIMFORH - ENDED - TIME=21.17.21
+ 21.17.21 JOB   13  $HASP395 PRIMFORH ENDED
+ 
+ 
+ ------ JES2 JOB STATISTICS ------
+ 
+ 
+  26 NOV 21 JOB EXECUTION DATE
+ 
+ 
+        204 CARDS READ
+ 
+ 
+        339 SYSOUT PRINT RECORDS
+ 
+ 
+          0 SYSOUT PUNCH RECORDS
+ 
+ 
+       0.00 MINUTES EXECUTION TIME
+1    1     //PRIMFORH JOB (FORTRAN),                                               JOB   13
+           //             'Eratosthenes Sieve',
+           //             CLASS=A,
+           //             MSGCLASS=A,
+           //             REGION=9000K,TIME=1440,
+           //             MSGLEVEL=(1,1),
+           //            USER=HERC01,PASSWORD=            GENERATED BY GDL
+           **********************************************************************
+           ***
+           *** Name: SYS2.JCLLIB(PRIMFORH)
+           ***
+           *** Desc: Sieve of Eratosthenes programmed in FORTRAN,
+           ***       compiled using the IBM OS/360 FORTRAN H Level 21.8 compiler.
+           ***       All prime numbers up to the value entered via
+           ***       //GO.SYSIN DD are computed.
+           ***
+           **********************************************************************
+     2     //PRIMES    EXEC FORTHCLD,PARM.GO='SIZE=9000000'
+     3     XXFORTHCLD PROC SOUT='*'                                                00000100
+     4     XXFORT     EXEC PGM=IEKAA00,PARM=(SOURCE,MAP)                           00000200
+     5     XXSYSPRINT DD SYSOUT=&SOUT                                              00000300
+     6     XXSYSPUNCH DD SYSOUT=B                                                  00000400
+     7     XXSYSLIN   DD DSNAME=&LOADSET,UNIT=SYSDA,DISP=(MOD,PASS),               00000500
+           XX            SPACE=(400,(200,50),RLSE)                                 00000600
+     8     //FORT.SYSIN DD *
+     9     XXGO       EXEC PGM=LOADER,PARM=(MAP),COND=(4,LT,FORT)                  00000700
+    10     XXSYSLIB   DD DSNAME=SYS1.FORTLIB,DISP=SHR                              00000800
+    11     XXSYSLOUT  DD SYSOUT=&SOUT                                              00000900
+    12     XXSYSLIN   DD DSNAME=*.FORT.SYSLIN,DISP=(OLD,PASS)                      00001000
+    13     XXFT05F001 DD DDNAME=SYSIN                                              00001100
+    14     //GO.FT06F001 DD SYSOUT=*,DCB=(RECFM=FBA,LRECL=166,BLKSIZE=16600)
+           X/FT06F001 DD SYSOUT=&SOUT                                              00001200
+    15     XXFT07F001 DD SYSOUT=B                                                  00001300
+    16     //GO.SYSIN DD *
+1  STMT NO. MESSAGE
+ -
+     5     IEF653I SUBSTITUTION JCL - SYSOUT=*
+    11     IEF653I SUBSTITUTION JCL - SYSOUT=*
+    14     IEF653I SUBSTITUTION JCL - SYSOUT=*
+0IEF236I ALLOC. FOR PRIMFORH FORT PRIMES
+ IEF237I JES2 ALLOCATED TO SYSPRINT
+ IEF237I JES2 ALLOCATED TO SYSPUNCH
+ IEF237I 180  ALLOCATED TO SYSLIN
+ IEF237I JES2 ALLOCATED TO SYSIN
+ IEF142I PRIMFORH FORT PRIMES - STEP WAS EXECUTED - COND CODE 0000
+ IEF285I   JES2.JOB00013.SO0103                         SYSOUT
+ IEF285I   JES2.JOB00013.SO0104                         SYSOUT
+ IEF285I   SYS21330.T211720.RA000.PRIMFORH.LOADSET      PASSED        *-------39
+ IEF285I   VOL SER NOS= WORK02.
+ IEF285I   JES2.JOB00013.SI0101                         SYSIN
+ IEF373I STEP /FORT    / START 21330.2117
+ IEF374I STEP /FORT    / STOP  21330.2117 CPU    0MIN 00.05SEC SRB    0MIN 00.01SEC VIRT  9064K SYS   232K
+0************************************************************************************************************************************
+ *     1. Jobstep of job: PRIMFORH    Stepname: FORT        Program name: IEKAA00    Executed on 26.11.21 from 21.17.20 to 21.17.20 *
+ *         elapsed time  00:00:00,12                      CPU-Identifier:  TK4-           Page-in:      0                           *
+ *             CPU time  00:00:00,06               Virtual Storage used:   9064K         Page-out:      0                           *
+ *           corr. CPU:  00:00:00,06   CPU time has been corrected by  1 / 1,0  multiplier                                          *
+ *                                                                                                                                  *
+ *     I/O Operation                                                                                                                *
+ *     Number of records read via DD * or DD DATA:    180                                                                           *
+ *     DMY.......0 DMY.......0 180......39 DMY.......0                                                                              *
+ *                                                                                                                                  *
+ *                                          Charge for step (w/o SYSOUT):          0,10                                             *
+ ************************************************************************************************************************************
+ IEF236I ALLOC. FOR PRIMFORH GO PRIMES
+ IEF237I 148  ALLOCATED TO SYSLIB
+ IEF237I JES2 ALLOCATED TO SYSLOUT
+ IEF237I 180  ALLOCATED TO SYSLIN
+ IEF237I JES2 ALLOCATED TO FT05F001
+ IEF237I JES2 ALLOCATED TO FT06F001
+ IEF237I JES2 ALLOCATED TO FT07F001
+ IEF142I PRIMFORH GO PRIMES - STEP WAS EXECUTED - COND CODE 0000
+ IEF285I   SYS1.FORTLIB                                 KEPT          *-------65
+ IEF285I   VOL SER NOS= MVSRES.
+ IEF285I   JES2.JOB00013.SO0105                         SYSOUT
+ IEF285I   SYS21330.T211720.RA000.PRIMFORH.LOADSET      PASSED        *-------40
+ IEF285I   VOL SER NOS= WORK02.
+ IEF285I   JES2.JOB00013.SI0102                         SYSIN
+ IEF285I   JES2.JOB00013.SO0106                         SYSOUT
+ IEF285I   JES2.JOB00013.SO0107                         SYSOUT
+ IEF373I STEP /GO      / START 21330.2117
+ IEF374I STEP /GO      / STOP  21330.2117 CPU    0MIN 00.04SEC SRB    0MIN 00.01SEC VIRT  8824K SYS   224K
+0************************************************************************************************************************************
+ *     2. Jobstep of job: PRIMFORH    Stepname: GO          Program name: LOADER     Executed on 26.11.21 from 21.17.20 to 21.17.21 *
+ *         elapsed time  00:00:00,10                      CPU-Identifier:  TK4-           Page-in:      0                           *
+ *             CPU time  00:00:00,05               Virtual Storage used:   8824K         Page-out:      0                           *
+ *           corr. CPU:  00:00:00,05   CPU time has been corrected by  1 / 1,0  multiplier                                          *
+ *                                                                                                                                  *
+ *     I/O Operation                                                                                                                *
+ *     Number of records read via DD * or DD DATA:      1                                                                           *
+ *     148......65 DMY.......0 180......40 DMY.......0 DMY.......0 DMY.......0                                                      *
+ *                                                                                                                                  *
+ *                                          Charge for step (w/o SYSOUT):          0,08                                             *
+ ************************************************************************************************************************************
+ IEF237I 180  ALLOCATED TO SYS00001
+ IEF285I   SYS21330.T211721.RA000.PRIMFORH.R0000001     KEPT          *--------0
+ IEF285I   VOL SER NOS= WORK02.
+ IEF285I   SYS21330.T211720.RA000.PRIMFORH.LOADSET      DELETED
+ IEF285I   VOL SER NOS= WORK02.
+ IEF375I  JOB /PRIMFORH/ START 21330.2117
+ IEF376I  JOB /PRIMFORH/ STOP  21330.2117 CPU    0MIN 00.09SEC SRB    0MIN 00.02SEC
+1  LEVEL 21.8 ( JUN 74 )                          OS/360  FORTRAN H                                 DATE  21.330/21.17.20
+ 
+            COMPILER OPTIONS - NAME=  MAIN,OPT=00,LINECNT=50,SIZE=0000K,
+                               SOURCE,EBCDIC,NOLIST,NODECK,LOAD,MAP,NOEDIT,NOID,NOXREF
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Sieve of Eratosthenes.                                        */
+                 C /*-----------------------------------------------------------------*/
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Formats for output.                                           */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0002     3     FORMAT (' ')
+    ISN 0003     4     FORMAT (  3X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7,
+                      11X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X, I7, 1X
+                      1, I7, 1X, I7, 1X, I7)
+    ISN 0004     5     FORMAT (' Sieve of Eratosthenes generated using OS/360 FORTRAN H L
+                      1evel 21.8')
+    ISN 0005     6     FORMAT (' Upper limit of test range = ', I12)
+    ISN 0006     7     FORMAT (' Number of primes in range = ', I12)
+    ISN 0007     8     FORMAT (I7)
+    ISN 0008     993   FORMAT (' DEBUG: marking as non prime: ', I4)
+    ISN 0009     994   FORMAT (' DEBUG: starting p=', I4, '    j=', I4)
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Define array of flags, one for each integer in the range      */
+                 C /*   we will test.  If the flag is on, the corresponding           */
+                 C /*   number is prime.  If it's off, the number is not prime.       */
+                 C /*   We will initialize all the flags to on (assuming every        */
+                 C /*   number is prime) and turn them off as we determine the        */
+                 C /*   corresponding number is not prime.                            */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0010           LOGICAL*1 FLAGS(5000002)
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   The PRIME array will hold all the prime numbers we have       */
+                 C /*   identified, and CPRIME will contain the number of primes      */
+                 C /*   we've found.                                                  */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0011           INTEGER*4 PRIME(350000)
+    ISN 0012           INTEGER*4 CPRIME
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   J is a loop counter and work variable.                        */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0013           INTEGER*4 J
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   K is the step amount for crossing out prime multiples         */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0014           INTEGER*4 K
+1                                                                                                                PAGE 002
+ 
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   P is the number that we've most recently determined           */
+                 C /*   definitely to be prime.                                       */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0015           INTEGER*4 P
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   The DEBUG flag is set to TRUE if debugging messages are to    */
+                 C /*   be issued and FALSE otherwise.                                */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0016           LOGICAL*1 DEBUG
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   LIMIT sets the upper bound of the range of numbers we         */
+                 C /*   will test.                                                    */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0017           INTEGER*4 LIMIT
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   REPEAT is the number of times that the entire prime           */
+                 C /*   generation process is to be repeated, and is useful           */
+                 C /*   for benchmarking (otherwise it should be 1).                  */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0018           INTEGER*4 REPEAT
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Initialize LIMIT, DEBUG and REPEAT.                           */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0019           READ (5, 8) LIMIT
+                 C     DEBUG = .TRUE.
+    ISN 0020           DEBUG = .FALSE.
+    ISN 0021           REPEAT = 1
+                 C
+                 C *--------------------------------------------------------------*
+                 C *    THIS IS THE TOP OF THE LOOP FOR BENCHMARK TESTING.
+                 C *--------------------------------------------------------------*
+    ISN 0022     100   CONTINUE
+    ISN 0023           REPEAT = REPEAT - 1
+    ISN 0024           IF (REPEAT .LT. 0) GO TO 999
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Initialize all flags to on.  We optimistically assume         */
+                 C /*   all numbers are prime, and will subsequently turn flags       */
+                 C /*   off as reality sets in.                                       */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0026           DO 200 J = 3, LIMIT, 2
+    ISN 0027             FLAGS(J) = .TRUE.
+1                                                                                                                PAGE 003
+ 
+    ISN 0028     200   CONTINUE
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   The first prime number is 3, the 2 is handled manually        */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0029           P = 3
+                 C
+                 C  /*-----------------------------------------------------------------*/
+                 C  /*   Start of the main loop.  P is the prime number we're          */
+                 C  /*   currently working on.  If P*P is greater than the limit       */
+                 C  /*   value, we're done (all the numbers between P and the limit    */
+                 C  /*   inclusive have already been marked appropriately).  Any       */
+                 C  /*   non-prime less than P*P has also already been marked          */
+                 C  /*   appropriately, so we will start this pass marking with        */
+                 C  /*   P*P (which we will call J).                                   */
+                 C  /*-----------------------------------------------------------------*/
+    ISN 0030     300   CONTINUE
+    ISN 0031           J = P * P
+    ISN 0032           K = 2 * P
+    ISN 0033           IF (J .GE. LIMIT) GO TO 700
+    ISN 0035             IF (.NOT. DEBUG) GO TO 400
+    ISN 0037               WRITE (6, 994) P, J
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   By definition, all multiples of prime number P are not        */
+                 C /*   prime.  Turn off the flags for the multiples of P to          */
+                 C /*   mark them as non-prime. Note: Even numbers are skipped.       */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0038     400   CONTINUE
+    ISN 0039             IF (J .GT. LIMIT) GO TO 500
+    ISN 0041             IF (.NOT. DEBUG) GO TO 420
+    ISN 0043               WRITE (6, 993) J
+    ISN 0044     420     FLAGS(J) = .FALSE.
+    ISN 0045             J = J + K
+    ISN 0046           GO TO 400
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Done marking all multiples of J as not prime.  Find the       */
+                 C /*   next prime number after J, set it to P and loop back to       */
+                 C /*   process it. Note: Even numbers are skipped.                   */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0047     500   CONTINUE
+    ISN 0048             P = P + 2
+    ISN 0049             IF (FLAGS(P)) GO TO 600
+    ISN 0051           GO TO 500
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Bottom of the main loop.                                      */
+1                                                                                                                PAGE 004
+ 
+                 C /*-----------------------------------------------------------------*/
+    ISN 0052     600   CONTINUE
+    ISN 0053           GO TO 300
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Bottom of the benchmark loop.                                 */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0054     700   CONTINUE
+    ISN 0055           GO TO 100
+    ISN 0056     999   CONTINUE
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Set the prime numbers we have found in the PRIME array.       */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0057           CPRIME = 1
+    ISN 0058           PRIME(CPRIME) = 2
+    ISN 0059           DO 800 J = 3, LIMIT, 2
+    ISN 0060             IF (.NOT. FLAGS(J)) GO TO 800
+    ISN 0062               CPRIME = CPRIME + 1
+    ISN 0063               PRIME(CPRIME) = J
+    ISN 0064     800   CONTINUE
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   Display the results.                                          */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0065           WRITE (6, 3)
+    ISN 0066           WRITE (6, 5)
+    ISN 0067           WRITE (6, 6) LIMIT
+    ISN 0068           WRITE (6, 7) CPRIME
+    ISN 0069           WRITE (6, 3)
+    ISN 0070           WRITE (6, 4) (PRIME(J), J = 1, CPRIME)
+    ISN 0071           WRITE (6, 3)
+                 C
+                 C /*-----------------------------------------------------------------*/
+                 C /*   End of program.                                               */
+                 C /*-----------------------------------------------------------------*/
+    ISN 0072           STOP
+    ISN 0073           END
+1                                                      /     MAIN /     SIZE OF PROGRAM 61AD06 HEXADECIMAL BYTES PAGE 005
+ 
+ 
+       NAME    TAG   TYPE  ADD.        NAME    TAG   TYPE  ADD.        NAME    TAG   TYPE  ADD.        NAME    TAG   TYPE  ADD.
+           J SF      I*4  0001B4           K SF      I*4  0001B8           P SF      I*4  0001BC       DEBUG S       L*1  0001B0
+       FLAGS S       L*1  0001CC       LIMIT SF      I*4  0001C0       PRIME SF      I*4  4C4D14      CPRIME SF      I*4  0001C4
+      IBCOM#  F  XF  R*4  000000      REPEAT SF      I*4  0001C8
+1      LABEL   ADDR                LABEL   ADDR                LABEL   ADDR                LABEL   ADDR           PAGE 006
+ 
+       100  61AA6C                 200  61AA92                 300  61AAB0                 400  61AB0C
+       420  61AB48                 500  61AB66                 600  61AB8C                 700  61AB92
+       999  61AB98                 800  61ABEC
+ 
+0*OPTIONS IN EFFECT*      NAME=  MAIN,OPT=00,LINECNT=50,SIZE=0000K,
+0*OPTIONS IN EFFECT*      SOURCE,EBCDIC,NOLIST,NODECK,LOAD,MAP,NOEDIT,NOID,NOXREF
+0*STATISTICS*     SOURCE STATEMENTS =      72 ,PROGRAM SIZE =  6401286
+0*STATISTICS*  NO  DIAGNOSTICS GENERATED
+0 ****** END OF COMPILATION ******                                      8917K BYTES OF CORE NOT USED
+ 
+1                                                       VS LOADER
+ 
+ OPTIONS USED - PRINT,NOMAP,NOLET,CALL,RES,NOTERM,SIZE=9000000,NAME=**GO
+ 
+   TOTAL LENGTH   61FFD0
+   ENTRY ADDRESS   ACBD0
+ 
+ 
+1 
+ 
+ Sieve of Eratosthenes generated using OS/360 FORTRAN H Level 21.8
+ Upper limit of test range =         2000
+ Number of primes in range =          303
+ 
+         2       3       5       7      11      13      17      19      23      29      31      37      41      43      47      53      59      61
+        67      71      73      79      83      89      97     101     103     107     109     113     127     131     137     139     149     151
+       157     163     167     173     179     181     191     193     197     199     211     223     227     229     233     239     241     251
+       257     263     269     271     277     281     283     293     307     311     313     317     331     337     347     349     353     359
+       367     373     379     383     389     397     401     409     419     421     431     433     439     443     449     457     461     463
+       467     479     487     491     499     503     509     521     523     541     547     557     563     569     571     577     587     593
+       599     601     607     613     617     619     631     641     643     647     653     659     661     673     677     683     691     701
+       709     719     727     733     739     743     751     757     761     769     773     787     797     809     811     821     823     827
+       829     839     853     857     859     863     877     881     883     887     907     911     919     929     937     941     947     953
+       967     971     977     983     991     997    1009    1013    1019    1021    1031    1033    1039    1049    1051    1061    1063    1069
+      1087    1091    1093    1097    1103    1109    1117    1123    1129    1151    1153    1163    1171    1181    1187    1193    1201    1213
+      1217    1223    1229    1231    1237    1249    1259    1277    1279    1283    1289    1291    1297    1301    1303    1307    1319    1321
+      1327    1361    1367    1373    1381    1399    1409    1423    1427    1429    1433    1439    1447    1451    1453    1459    1471    1481
+      1483    1487    1489    1493    1499    1511    1523    1531    1543    1549    1553    1559    1567    1571    1579    1583    1597    1601
+      1607    1609    1613    1619    1621    1627    1637    1657    1663    1667    1669    1693    1697    1699    1709    1721    1723    1733
+      1741    1747    1753    1759    1777    1783    1787    1789    1801    1811    1823    1831    1847    1861    1867    1871    1873    1877
+      1879    1889    1901    1907    1913    1931    1933    1949    1951    1973    1979    1987    1993    1997    1999
+ 
+ 
+                 PPPPPPPPPPP   RRRRRRRRRRR    IIIIIIIIII   MM        MM  FFFFFFFFFFFF  OOOOOOOOOOOO  RRRRRRRRRRR   HH        HH
+                 PPPPPPPPPPPP  RRRRRRRRRRRR   IIIIIIIIII   MMM      MMM  FFFFFFFFFFFF  OOOOOOOOOOOO  RRRRRRRRRRRR  HH        HH
+                PP        PP  RR        RR       II       MMMM    MMMM  FF            OO        OO  RR        RR  HH        HH
+               PP        PP  RR        RR       II       MM MM  MM MM  FF            OO        OO  RR        RR  HH        HH
+              PP        PP  RR        RR       II       MM  MMMM  MM  FF            OO        OO  RR        RR  HH        HH
+             PPPPPPPPPPPP  RRRRRRRRRRRR       II       MM   MM   MM  FFFFFFFF      OO        OO  RRRRRRRRRRRR  HHHHHHHHHHHH
+            PPPPPPPPPPP   RRRRRRRRRRR        II       MM        MM  FFFFFFFF      OO        OO  RRRRRRRRRRR   HHHHHHHHHHHH
+           PP            RR    RR           II       MM        MM  FF            OO        OO  RR    RR      HH        HH
+          PP            RR     RR          II       MM        MM  FF            OO        OO  RR     RR     HH        HH
+         PP            RR      RR         II       MM        MM  FF            OO        OO  RR      RR    HH        HH
+        PP            RR       RR    IIIIIIIIII   MM        MM  FF            OOOOOOOOOOOO  RR       RR   HH        HH
+       PP            RR        RR   IIIIIIIIII   MM        MM  FF            OOOOOOOOOOOO  RR        RR  HH        HH
+ 
+ 
+ 
+                     JJJJJJJJJJ       11        3333333333                                              AAAAAAAAAA
+                     JJJJJJJJJJ      111       333333333333                                            AAAAAAAAAAAA
+                         JJ         1111       33        33                                            AA        AA
+                         JJ           11                 33                                            AA        AA
+                         JJ           11                 33                                            AA        AA
+                         JJ           11              3333                                             AAAAAAAAAAAA
+                         JJ           11              3333                                             AAAAAAAAAAAA
+                         JJ           11                 33                                            AA        AA
+                   JJ    JJ           11                 33                                            AA        AA
+                   JJ    JJ           11       33        33                                            AA        AA
+                   JJJJJJJJ       1111111111   333333333333                                            AA        AA
+                    JJJJJJ        1111111111    3333333333                                             AA        AA
+ 
+ 
+ ****A   END   JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13   END   A****
+ ****A   END   JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13   END   A****
+ ****A   END   JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13   END   A****
+ ****A   END   JOB   13  PRIMFORH  Eratosthenes Sieve    ROOM        9.17.21 PM 26 NOV 21  PRINTER1  SYS TK4-  JOB   13   END   A****
