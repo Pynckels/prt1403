@@ -144,3 +144,7 @@ along with prt1403. If not, see <https://www.gnu.org/licenses/>.
 ***IBM font*** : This project uses the IBMPlexMono-Regular font. It is licensed under IBMPlexMono-Regular.license
 
 ***1403 font*** : This project uses the IBM140310Pitch-Regular-MRW font. It can be found at https://ibm-1401.info/1403Fonts.html#Fonts
+
+### Contributors
+
+Thanks to **[LeslieMurphy](https://github.com/LeslieMurphy)** for his work on --asaCarriageControl and --datefmt.
