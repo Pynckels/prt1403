@@ -27,7 +27,7 @@ import tempfile
 
 #------------------------------------------------------------------------------------------
 
-__VERSION__  = '1.5.pre-release'
+__VERSION__  = '1.5'
 
 BLUE_DARK    = {'R': 65, 'G':182, 'B':255}                          # Blue banded paper
 BLUE_LIGHT   = {'R':214, 'G':239, 'B':255}
@@ -344,21 +344,20 @@ def prt1403_draw_page(pdf, text, size, font, color_form, color_holes):
 #------------------------------------------------------------------------------------------
 
 def prt1403_print(
-    inFile                  ,
-    outFile                 ,
-    font                    ,
-    sepFileName             ,
-    color_form  = GREEN     ,
-    color_holes = GRAY      ,
-    separator   = False     ,
-    jobId       = 'JOBID'   ,
-    asaCarriageControl = False, 
-    linenum     = False     ,
-    header      = True      ,
-    size        = PAGE_WIDE ,
-    datefmt     = 'DMY'     ,
-    userId      = 'USERID'  ,
-    
+    inFile                         ,
+    outFile                        ,
+    font                           ,
+    sepFileName                    ,
+    color_form         = GREEN     ,
+    color_holes        = GRAY      ,
+    separator          = False     ,
+    jobId              = 'JOBID'   ,
+    asaCarriageControl = False     ,
+    linenum            = False     ,
+    header             = True      ,
+    size               = PAGE_WIDE ,
+    datefmt            = 'DMY'     ,
+    userId             = 'USERID'  ,
     ):
 
     '''
@@ -406,7 +405,7 @@ def prt1403_print(
     for file in files:
 
         file = split_on_0x0C(file)                                  # Split lines containing form feed (FF = \x0C)
-        
+
         nrFormFeed = sum(1 for line in file if line == '\x0C')      # Number of explicit form feed (FF) chars
         nrLines = len(file) - nrFormFeed                            # Number of lines (exclude explicit FF chars)
         nrPages = (nrLines // linesPerPage + 1) + nrFormFeed        # Number of pages (each FF char adds a page)
@@ -437,7 +436,7 @@ def prt1403_print(
             line = 0                                                # Get data for current page
             asaCC = None
             printerLineNum = 0
-           
+
             while line < len(file) and printerLineNum < linesPerPage and file[line] != '\x0C' and asaCC != '1':
                 lineContents = file[line]
                 printerLineNum += 1
@@ -445,20 +444,20 @@ def prt1403_print(
                     if len(file[line]) > 1:
                         asaCC = file[line][0]
                         if asaCC == '0':
-                            #text.append("\n")
                             text = text + [' ']
                             printerLineNum += 1
                         if asaCC == '-':
                             text = text + [' ', ' ']
                             printerLineNum += 2
-                            #text.append("\n \n")
-                        
+
                         lineContents = lineContents[1:]
-                if asaCC != '1':                                    # only add the contents of the current line to the page if it is not ASA form feed before
+                if asaCC != '1':                                    # Only add the contents of the current line to
+                                                                    # the page if it is not ASA form feed before
                     text.append( lineContents )
                     line += 1
                 else:
-                    file[line] = ' ' + lineContents                 # overlay the ASA form feed so this line will print at the top of the new page. Don't incr line
+                    file[line] = ' ' + lineContents                 # overlay the ASA form feed so this line will print
+                                                                    # at the top of the new page. Don't increment line
 
             if line < len(file) and file[line] == '\x0C':           # Skip eventual form feed line
                 line += 1
@@ -552,7 +551,7 @@ def main():
     parser = argparse.ArgumentParser(description='Print a text file to PDF in IBM 1403 retro style')
 
     parser.add_argument('infile',            metavar='<Input file>',  type=infile_validator,                                               help='File to process or - for stdin.')
-    parser.add_argument('-a', '--asaCarriageControl',                 action='store_true',                          default=False,         help='First char in line is ASA carriage control.')
+    parser.add_argument('-a', '--asaCarriageControl',                 action='store_true',                          default=False,         help='Handle first char of each line as ASA carriage control.')
     parser.add_argument('-c', '--color',                              choices=['BLUE', 'GRAY', 'GREEN', 'WHITE'],   default='GREEN',       help='Color of form preprint. Text color is black.')
     parser.add_argument('-d', '--datefmt',                            choices=['DMY', 'MDY', 'YMD'],                default='DMY',         help='Date format on header.')
     parser.add_argument('-e', '--separator',                          action='store_true',                          default=False,         help='Print separator page.')
