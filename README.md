@@ -39,7 +39,7 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-c {BLUE,GRAY,GREEN,WHITE}] [-d {YMD,MDY,DMY}] [-e] [-f FONT] [-i NAME] [-j jobID] [-l] [-n]
+    usage: prt1403 [-h] [-a] [-c {BLUE,GRAY,GREEN,WHITE}] [-d {DMY,MDY,YMD}] [-e] [-f FONT] [-i NAME] [-j jobID] [-l] [-n]
                    [-o <Output file>] [-p POINTS] [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
                    <Input file>
 
@@ -50,9 +50,11 @@ This results in the following information.
 
     options:
       -h, --help            show this help message and exit
+      -a, --asaCarriageControl
+                            Handle first char of each line as ASA carriage control.
       -c, --color {BLUE,GRAY,GREEN,WHITE}
                             Color of form preprint. Text color is black.
-      -d, --datefmt {YMD,MDY,DMY}
+      -d, --datefmt {DMY,MDY,YMD}
                             Date format on header.
       -e, --separator       Print separator page.
       -f, --font FONT       Choose between FONT1403, FONTMONO or an installed font.
