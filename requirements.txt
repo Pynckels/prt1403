@@ -1,2 +1,2 @@
-fonttools==4.55.3
-fpdf2==2.8.2
+fonttools==4.57.0
+fpdf2==2.8.4
