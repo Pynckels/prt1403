@@ -1,2 +1,3 @@
 fonttools
 fpdf2
+pillow
