@@ -27,9 +27,25 @@ The easiest way to install prt1403 is as follows.
 
 If running the program does not function, logging out and back in can help to update your $PATH.
 
-#### Mac & Windows
+#### Mac
 
 Contact me and we'll cook something up together.
+
+#### Windows
+
+This program has been tested under Windows 7. The way to install is as follows.
+
+1. Create a folder called PRT1403
+2. Download PRT1403 to this folder
+3. Download to this folder a current version of Python from the following website:
+    https://www.python.org/downloads/windows/
+    For a Windows 7 32-bit system, this is python-3.8.7rc1.exe
+4. In the PRT1403 folder, execute the pip command to download the Python requirements
+    py -m pip install fonttools
+    py -m pip install fpdf2
+    py -m pip install pillow
+5. Then test the installation by executing the PRT1403 help command.
+    py PRT1403 --help    
 
 ### Syntax
 
@@ -148,3 +164,5 @@ along with prt1403. If not, see <https://www.gnu.org/licenses/>.
 ### Contributors
 
 Thanks to **[LeslieMurphy](https://github.com/LeslieMurphy)** for his work on --asaCarriageControl and --datefmt.
+
+Thanks to **[Harry6598](https://github.com/Harry6598)** for testing PRT1403 on Windows 7 and for describing the Windows procedure.
