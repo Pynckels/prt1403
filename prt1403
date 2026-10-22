@@ -204,7 +204,8 @@ def prt1403_add_font(pdf, font):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.ttf') as tf:
             tf.write(font[0])
             fontPath = tf.name
-            pdf.add_font('prt1403Font', '', fontPath)
+                                                                    # Keep next statement outside the with
+        pdf.add_font('prt1403Font', '', fontPath)                   # so that the tempfile is flushed/closed
 
 #------------------------------------------------------------------------------------------
 
