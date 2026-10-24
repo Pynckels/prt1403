@@ -88,7 +88,7 @@ def change_invalid_characters(inStr, font):
 
 #------------------------------------------------------------------------------------------
 
-def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font):
+def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font, lpi=6):
 
     '''
     Create the contents of a separator page
@@ -125,42 +125,47 @@ def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPage
     else:
         formName = 'SPECIAL'
 
-    sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
+    nrSpLines = size[3] * lpi // 6                                  # 66 lines at 6 LPI, 88 lines at 8 LPI
+    top       = lpi - 6                                             # Extra header lines at 8 LPI
+    if lpi == 8:                                                    # Large font blocks spread over 88 lines
+        largeBase = (33, 50, 67)
+    else:
+        largeBase = (27, 39, 51)
 
-    sp[ 0] = '*' * pageWidth                                        # Fill in the blanks...
+    sp = empty_strings_list = [''] * nrSpLines                      # Initialize with empty lines
+
+    for i in range(0, lpi-1):                                       # Fill in the blanks...
+        sp[i] = '*' * pageWidth
     sp[ 1] = ('-  ' * (pageWidth // 3 - 1) + '-').center(pageWidth)
-    sp[ 2] = '*' * pageWidth
-    sp[ 3] = '*' * pageWidth
-    sp[ 4] = '*' * pageWidth
-    sp[ 5] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
+    sp[lpi-1] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
 
-    sp[ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + sepFileName
-    sp[10] = jobId + '  ' + userId
-    sp[11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
-    sp[12] = jobId + '  ' + userId
-    sp[13] = jobId + '  ' + userId + '   FILE= ' +  str(fileNr ).rjust(3,'0') + \
-                                     '   PAGES= ' + str(nrPages).rjust(4,'0') + \
-                                     '   LINES= ' + str(nrLines).rjust(6,'0')
-    sp[14] = jobId + '  ' + userId
-    sp[15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
-    sp[16] = jobId + '  ' + userId
-    sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + getpass.getuser()
-    sp[18] = jobId + '  ' + userId
-    sp[19] = jobId + '  ' + userId + '   FORM= ' + formName
-    sp[20] = jobId + '  ' + userId
-    sp[21] = jobId + '  ' + userId + '   CHAR= ' + fontName
-    sp[22] = jobId + '  ' + userId
-    sp[23] = jobId + '  ' + userId + '   PRT1403 VERSION= ' + __VERSION__
+    sp[top+ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + sepFileName
+    sp[top+10] = jobId + '  ' + userId
+    sp[top+11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
+    sp[top+12] = jobId + '  ' + userId
+    sp[top+13] = jobId + '  ' + userId + '   FILE= ' +  str(fileNr ).rjust(3,'0') + \
+                                         '   PAGES= ' + str(nrPages).rjust(4,'0') + \
+                                         '   LINES= ' + str(nrLines).rjust(6,'0')
+    sp[top+14] = jobId + '  ' + userId
+    sp[top+15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
+    sp[top+16] = jobId + '  ' + userId
+    sp[top+17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + getpass.getuser()
+    sp[top+18] = jobId + '  ' + userId
+    sp[top+19] = jobId + '  ' + userId + '   FORM= ' + formName
+    sp[top+20] = jobId + '  ' + userId
+    sp[top+21] = jobId + '  ' + userId + '   CHAR= ' + fontName
+    sp[top+22] = jobId + '  ' + userId
+    sp[top+23] = jobId + '  ' + userId + '   PRT1403 VERSION= ' + __VERSION__
 
-    sp = print_large_font(sp, 27, userId,  fontDict)                # Print UserID in large font
-    sp = print_large_font(sp, 39, jobId,   fontDict)                # Print JobID  in large font
-    sp = print_large_font(sp, 51, fileNum, fontDict)                # Print file number in large font
+    sp = print_large_font(sp, largeBase[0], userId,  fontDict)      # Print UserID in large font
+    sp = print_large_font(sp, largeBase[1], jobId,   fontDict)      # Print JobID  in large font
+    sp = print_large_font(sp, largeBase[2], fileNum, fontDict)      # Print file number in large font
 
-    sp[63] = '*' * pageWidth
-    sp[64] = '*' * pageWidth
-    sp[65] = '*' * pageWidth
+    sp[nrSpLines-3] = '*' * pageWidth
+    sp[nrSpLines-2] = '*' * pageWidth
+    sp[nrSpLines-1] = '*' * pageWidth
 
-    for i in range(0,66):
+    for i in range(0,nrSpLines):
         sp[i] = sp[i].upper()                                        # To be on the safe side (with glyphs)
 
     return sp
@@ -418,7 +423,7 @@ def prt1403_print(
         nrPages = (nrLines // linesPerPage + 1) + nrFormFeed        # Number of pages (each FF char adds a page)
 
         if separator:                                               # Print separator page
-            text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
+            text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font, lpi)
             prt1403_draw_page(pdf, text, size, font, color_form, color_holes, lpi)
 
         if linenum:                                                 # Add line numbers (skip form feed lines)
