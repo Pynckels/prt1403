@@ -55,7 +55,7 @@ To get the command line syntax the -h and the --help option can be used.
 
 This results in the following information.
 
-    usage: prt1403 [-h] [-a] [-c {BLUE,GRAY,GREEN,WHITE}] [-d {DMY,MDY,YMD}] [-e] [-f FONT] [-i NAME] [-j jobID] [-l] [-n]
+    usage: prt1403 [-h] [-a] [-c {BLUE,GRAY,GREEN,WHITE}] [-d {DMY,MDY,YMD}] [-e] [-f FONT] [-i NAME] [-j jobID] [-L {6,8}] [-l] [-n]
                    [-o <Output file>] [-p POINTS] [-s {SMALL,MEDIUM,WIDE}] [-u userID] [-v] [-y]
                    <Input file>
 
@@ -76,6 +76,7 @@ This results in the following information.
       -f, --font FONT       Choose between FONT1403, FONTMONO or an installed font.
       -i, --filename NAME   Override file name/path on separator page.
       -j, --jobid jobID     Job identifier (1 to 8 alphanumeric characters).
+      -L, --lpi {6,8}       Lines per inch (6 = 66 lines/page, 8 = 88 lines/page).
       -l, --linenum         Print line numbers.
       -n, --noheader        Disable printing of page headers.
       -o, --outfile <Output file>
@@ -110,6 +111,12 @@ To use an installed font and resize it you can use the option -f/--font and -p/-
 This looks like:
 
 ![Fortran source code example with chosen font](tests/testOut/test4_4.png)
+
+### Lines per inch
+
+Like the real 1403 carriage, prt1403 can print at 6 or 8 lines per inch. The default is 6 LPI (66 lines per 11" page, 60 lines of text under the header). With -L/--lpi 8 a page holds 88 lines (80 lines of text under the header), lining up with the 1-80 scale on the right margin of the form. At 8 LPI the characters are squashed vertically so they fit the tighter line spacing while keeping 10 characters per inch.
+
+    prt1403 -s SMALL -L 8 -o example.pdf example.txt
 
 ### Print multiple files from stdin
 

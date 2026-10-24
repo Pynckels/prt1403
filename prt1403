@@ -88,7 +88,7 @@ def change_invalid_characters(inStr, font):
 
 #------------------------------------------------------------------------------------------
 
-def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font):
+def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font, lpi=6):
 
     '''
     Create the contents of a separator page
@@ -125,42 +125,47 @@ def create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPage
     else:
         formName = 'SPECIAL'
 
-    sp = empty_strings_list = [''] * 66                             # Initialize with empty lines
+    nrSpLines = size[3] * lpi // 6                                  # 66 lines at 6 LPI, 88 lines at 8 LPI
+    top       = lpi - 6                                             # Extra header lines at 8 LPI
+    if lpi == 8:                                                    # Large font blocks spread over 88 lines
+        largeBase = (33, 50, 67)
+    else:
+        largeBase = (27, 39, 51)
 
-    sp[ 0] = '*' * pageWidth                                        # Fill in the blanks...
+    sp = empty_strings_list = [''] * nrSpLines                      # Initialize with empty lines
+
+    for i in range(0, lpi-1):                                       # Fill in the blanks...
+        sp[i] = '*' * pageWidth
     sp[ 1] = ('-  ' * (pageWidth // 3 - 1) + '-').center(pageWidth)
-    sp[ 2] = '*' * pageWidth
-    sp[ 3] = '*' * pageWidth
-    sp[ 4] = '*' * pageWidth
-    sp[ 5] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
+    sp[lpi-1] = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + ' ' * ( pageWidth - 72 ) + 'PAGE: 0000'
 
-    sp[ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + sepFileName
-    sp[10] = jobId + '  ' + userId
-    sp[11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
-    sp[12] = jobId + '  ' + userId
-    sp[13] = jobId + '  ' + userId + '   FILE= ' +  str(fileNr ).rjust(3,'0') + \
-                                     '   PAGES= ' + str(nrPages).rjust(4,'0') + \
-                                     '   LINES= ' + str(nrLines).rjust(6,'0')
-    sp[14] = jobId + '  ' + userId
-    sp[15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
-    sp[16] = jobId + '  ' + userId
-    sp[17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + getpass.getuser()
-    sp[18] = jobId + '  ' + userId
-    sp[19] = jobId + '  ' + userId + '   FORM= ' + formName
-    sp[20] = jobId + '  ' + userId
-    sp[21] = jobId + '  ' + userId + '   CHAR= ' + fontName
-    sp[22] = jobId + '  ' + userId
-    sp[23] = jobId + '  ' + userId + '   PRT1403 VERSION= ' + __VERSION__
+    sp[top+ 9] = jobId + '  ' + userId + '   FILE NAME/TYPE= ' + sepFileName
+    sp[top+10] = jobId + '  ' + userId
+    sp[top+11] = jobId + '  ' + userId + '   CREATION DATE/TIME= ' + date
+    sp[top+12] = jobId + '  ' + userId
+    sp[top+13] = jobId + '  ' + userId + '   FILE= ' +  str(fileNr ).rjust(3,'0') + \
+                                         '   PAGES= ' + str(nrPages).rjust(4,'0') + \
+                                         '   LINES= ' + str(nrLines).rjust(6,'0')
+    sp[top+14] = jobId + '  ' + userId
+    sp[top+15] = jobId + '  ' + userId + '   SYSTEM= ' + platform.system() + '(' + platform.release() + ')'
+    sp[top+16] = jobId + '  ' + userId
+    sp[top+17] = jobId + '  ' + userId + '   SYSID= ' + socket.gethostname() + '   SYSUSER= ' + getpass.getuser()
+    sp[top+18] = jobId + '  ' + userId
+    sp[top+19] = jobId + '  ' + userId + '   FORM= ' + formName
+    sp[top+20] = jobId + '  ' + userId
+    sp[top+21] = jobId + '  ' + userId + '   CHAR= ' + fontName
+    sp[top+22] = jobId + '  ' + userId
+    sp[top+23] = jobId + '  ' + userId + '   PRT1403 VERSION= ' + __VERSION__
 
-    sp = print_large_font(sp, 27, userId,  fontDict)                # Print UserID in large font
-    sp = print_large_font(sp, 39, jobId,   fontDict)                # Print JobID  in large font
-    sp = print_large_font(sp, 51, fileNum, fontDict)                # Print file number in large font
+    sp = print_large_font(sp, largeBase[0], userId,  fontDict)      # Print UserID in large font
+    sp = print_large_font(sp, largeBase[1], jobId,   fontDict)      # Print JobID  in large font
+    sp = print_large_font(sp, largeBase[2], fileNum, fontDict)      # Print file number in large font
 
-    sp[63] = '*' * pageWidth
-    sp[64] = '*' * pageWidth
-    sp[65] = '*' * pageWidth
+    sp[nrSpLines-3] = '*' * pageWidth
+    sp[nrSpLines-2] = '*' * pageWidth
+    sp[nrSpLines-1] = '*' * pageWidth
 
-    for i in range(0,66):
+    for i in range(0,nrSpLines):
         sp[i] = sp[i].upper()                                        # To be on the safe side (with glyphs)
 
     return sp
@@ -315,7 +320,7 @@ def prt1403_draw_holes(pdf, size, color):
 
 #------------------------------------------------------------------------------------------
 
-def prt1403_draw_page(pdf, text, size, font, color_form, color_holes):
+def prt1403_draw_page(pdf, text, size, font, color_form, color_holes, lpi=6):
 
     '''
     Draw a single page of text.
@@ -329,16 +334,22 @@ def prt1403_draw_page(pdf, text, size, font, color_form, color_holes):
     prt1403_draw_holes(pdf, size, color_holes)                      # Draw page holes (after drawing background)
 
     pdf.set_font('prt1403Font')                                     # Activate prt1403 font
-    pdf.set_font_size(font[1])
+    pdf.set_font_size(font[1] * 6 / lpi)                            # At 8 LPI, squash glyphs vertically to fit
+    pdf.set_stretching(100 * lpi / 6)                               # the line, but keep 10 chars/inch
     pdf.set_text_color(0, 0, 0)
 
-    lines = [ line[:size[2]+1].rstrip() for line in text[:size[3]] ] # Clip to maximal number chars and lines
+    maxLines = size[3] * lpi // 6                                   # 66 lines at 6 LPI, 88 lines at 8 LPI
+    pitch    = 72 / lpi                                             # Line pitch in points (12 or 9)
+
+    lines = [ line[:size[2]+1].rstrip() for line in text[:maxLines] ] # Clip to maximal number chars and lines
 
     lineNr = 1                                                      # Print all lines on the page
     for line in lines:
         line = change_invalid_characters(line, font)                # Check if the font can cope with the text chars
-        pdf.text(43, lineNr*12-3, line);
+        pdf.text(43, lineNr*pitch-pitch/4, line);
         lineNr += 1
+
+    pdf.set_stretching(100)                                         # Don't stretch the next page's form
 
     return
 
@@ -357,6 +368,7 @@ def prt1403_print(
     linenum            = False     ,
     header             = True      ,
     size               = PAGE_WIDE ,
+    lpi                = 6         ,
     datefmt            = 'DMY'     ,
     userId             = 'USERID'  ,
     ):
@@ -384,10 +396,9 @@ def prt1403_print(
     head = 'DATE: ' + date + '     USER: ' + userId + '     JOB: ' + jobId + \
            ' ' * ( size[2] -72 ) + 'PAGE: '
 
+    linesPerPage = size[3] * lpi // 6                               # 66 lines at 6 LPI, 88 lines at 8 LPI
     if header:
-        linesPerPage = 60
-    else:
-        linesPerPage = 66
+        linesPerPage -= lpi                                         # Leave room for the header (top inch)
 
     if inFile == 'stdin':                                           # Input from stdin
         inChars = sys.stdin.buffer.read().decode('utf-8')
@@ -412,8 +423,8 @@ def prt1403_print(
         nrPages = (nrLines // linesPerPage + 1) + nrFormFeed        # Number of pages (each FF char adds a page)
 
         if separator:                                               # Print separator page
-            text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font)
-            prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
+            text = create_separator_page(sepFileName, userId, jobId, date, fileNr, size, nrPages, nrLines, font, lpi)
+            prt1403_draw_page(pdf, text, size, font, color_form, color_holes, lpi)
 
         if linenum:                                                 # Add line numbers (skip form feed lines)
             lineNum = 1
@@ -428,9 +439,9 @@ def prt1403_print(
         page = 1
         while len(file):                                            # Print contents
             if header:                                              # Print header ...
-                text = [' ', ' ', ' ']
+                text = [' '] * (lpi // 2)                           # Header fills the top inch
                 text = text + [head + f'{page:04}']
-                text = text + [' ', ' ']
+                text = text + [' '] * (lpi // 2 - 1)
             else:                                                   # ... or don't
                 text = []
 
@@ -465,7 +476,7 @@ def prt1403_print(
 
             file = file[line:]                                      # Remove lines of current page
 
-            prt1403_draw_page(pdf, text, size, font, color_form, color_holes)
+            prt1403_draw_page(pdf, text, size, font, color_form, color_holes, lpi)
             page += 1                                               # Update page status variable
 
         fileNr += 1                                                 # Update file status variables
@@ -559,6 +570,7 @@ def main():
     parser.add_argument('-f', '--font',                               type=font_validator,                          default='FONTMONO',    help='Choose between FONT1403, FONTMONO or an installed font.')
     parser.add_argument('-i', '--filename',  metavar='NAME',          type=str,                                     default='',            help='Override file name/path on separator page.')
     parser.add_argument('-j', '--jobid',     metavar='jobID',         type=id_validator,                            default='NONE',        help='Job identifier (1 to 8 alphanumeric characters).')
+    parser.add_argument('-L', '--lpi',                                type=int, choices=[6, 8],                     default=6,             help='Lines per inch (6 = 66 lines/page, 8 = 88 lines/page).')
     parser.add_argument('-l', '--linenum',                            action='store_true',                          default=False,         help='Print line numbers.')
     parser.add_argument('-n', '--noheader',                           action='store_true',                          default=False,         help='Disable printing of page headers.')
     parser.add_argument('-o', '--outfile',   metavar='<Output file>', type=str,                                     default='prt1403.pdf', help='Output file name.')
@@ -617,6 +629,7 @@ def main():
         linenum     = args.linenum                        ,
         header      = not args.noheader                   ,
         size        = globals()['PAGE_' + args.size]      ,
+        lpi         = args.lpi                            ,
         datefmt     = globals()['DATEFMT_' + args.datefmt],
         userId      = userId
     )
