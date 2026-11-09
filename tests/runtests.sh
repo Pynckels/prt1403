@@ -43,3 +43,5 @@
 ../prt1403 -y    -j MATMUL   -u COBOL   -s SMALL  -l -L 8 -i /COBOL/MATH/MATMUL.COB -o testOut/testD_2.pdf testIn/test8.cob
 ../prt1403 -y -e -j MATMUL   -u COBOL   -s MEDIUM -l -L 8 -i /COBOL/MATH/MATMUL.COB -o testOut/testD_3.pdf testIn/test8.cob
 ../prt1403 -y -e -j MATMUL   -u COBOL   -s WIDE   -l -L 8 -i /COBOL/MATH/MATMUL.COB -o testOut/testD_4.pdf testIn/test8.cob
+
+../prt1403 -y -e -j LONGJOBIDENTIFIER -u LONGUSERIDENTIFIER -o testOut/testE_1.pdf testIn/test4.f90

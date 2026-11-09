@@ -527,7 +527,8 @@ def main():
                 quit()
 
     def id_validator(value):
-        ''' Check if the value is between 1 and 8 characters long and is alphanumeric. '''
+        ''' Limit the length of the value to 8 characters and check if the value is alphanumeric. '''
+        value = value[:8]
         if not re.match(r'^[a-zA-Z0-9]{1,8}$', value):
             raise argparse.ArgumentTypeError('Job ID and User ID must be between 1 and 8 alphanumeric characters.')
         return value
