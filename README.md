@@ -4,9 +4,23 @@ Print a text file to PDF in IBM 1403 retro style
 
 ![Fortran source code example](tests/testOut/test2.png)
 
+### Examples
+
 Examples of what can be done with prt1403 can be found at https://github.com/Pynckels/prt1403/tree/main/tests/testOut
 
 The commands to create the examples can be found at https://github.com/Pynckels/prt1403/blob/main/tests/runtests.sh
+
+#### Using prt1403 in DosBox-X
+
+For instructions on configuring DosBox-X to use prt1403, please refer to the following video: [![Retro printing with DosBox-x](https://img.youtube.com/vi/yY5HkZ3TIJM/0.jpg)](https://youtu.be/yY5HkZ3TIJM)
+
+#### Using prt1403 in Geany
+
+To configure Geany:
+
+- In the menu, go to `Edit -> Preferences -> Printing`
+- Select `Use an external command for printing`
+- Set the command to: `$HOME/.local/bin/prt1403 -e -y -u GEANY -j %e -o "%p/%e.pdf" "%p/%f"`
 
 ### Note
 
