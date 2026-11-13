@@ -4,17 +4,103 @@ Print a text file to PDF in IBM 1403 retro style
 
 ![Fortran source code example](tests/testOut/test2.png)
 
-### Examples
+## Note
+
+This is a work in progress, constructive comments are appreciated.
+
+---
+
+## Examples
 
 Examples of what can be done with prt1403 can be found at https://github.com/Pynckels/prt1403/tree/main/tests/testOut
 
 The commands to create the examples can be found at https://github.com/Pynckels/prt1403/blob/main/tests/runtests.sh
 
-#### Using prt1403 in DosBox-X
+### Using prt1403 in SDL Hercules Hyperion
+
+prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules-390/hyperion) to turn the output of an emulated 1403 printer into PDF files. Hercules pipes everything printed on a device to the helper program `hercules_spool`, which saves it as a `.lst` file in a host directory. When the printer is re-initialized with `devinit`, the spooled file is converted to PDF by `hercules_convert`, which calls prt1403.
+
+#### Setup
+
+1. **Install the helper programs.** Copy `hercules_spool` and `hercules_convert` (see the `hercules` folder of this repository) to the same directory. This directory must be in your `PATH`, and so must the directory containing `prt1403`. The Linux install below shows exactly this.
+
+2. **Configure the printers** in your Hercules `.conf` file. Anything printed on these devices is piped to `hercules_spool`, which writes to the given directory. Giving each printer its own directory prevents race conditions in the conversion program. The number of deffined 1403 printers is not limited to two.
+
+   ```
+   # Printers      anything you print will be piped to a directory
+   #               Giving each printer its own directory can prevent
+   #               racing conditions in the conversion program
+   000E    1403    "| hercules_spool 00E ./prt/prt_00E"
+   000F    1403    "| hercules_spool 00F ./prt/prt_00F"
+   ```
+
+3. **Start the printers** on the Hercules hardware console, each with its own spool class:
+
+   ```
+   /START 00E CLASS E
+   /START 00F CLASS F
+   ```
+
+   Check that they are running with:
+
+   ```
+   /QUERY UR
+       22:34:00 22:34:00 PUN  00D DRAINED   SYSTEM   CLASS = P      SEP
+       22:34:00 PRT  00E STARTED   SYSTEM   CLASS = E      SEP
+       22:34:00 PRT  00F STARTED   SYSTEM   CLASS = F      SEP
+   ```
+
+#### Printing
+
+From a CMS user, select the spool class of the printer you want to use and print a file:
+
+    spool prt class e
+    print profile exec a
+    spool prt class f
+    print hello c a
+
+On the Hercules console you will see the spool output and the pipe receivers starting:
+
+    HHCPR007I pipe receiver (pid=23534) starting for 000E
+    22:34:53 PRT  00E OUTPUT OF CMSUSER  FILE  = 0171 RECDS= 000014 COPY= 01  E PRT
+    23:34:53 HERCULES SPOOL SYSTEM: STARTED
+    23:34:53 HERCULES SPOOL SYSTEM: DEVICE 00E HOST DIR ./prt_00E
+    HHCPR007I pipe receiver (pid=23557) starting for 000F
+    22:35:37 PRT  00F OUTPUT OF CMSUSER  FILE  = 0172 RECDS= 000005 COPY= 01  F PRT
+    23:35:37 HERCULES SPOOL SYSTEM: STARTED
+    23:35:37 HERCULES SPOOL SYSTEM: DEVICE 00F HOST DIR ./prt_00F
+
+On the host, each printed file is stored as a `.lst` file named after the device and a timestamp (`YYMMDDhhmmss`):
+
+    prt_00E:
+    total 16
+    -rw-rw-r-- 1 acid acid 12966 Nov 12 23:34 prt_00E.261112233453.lst
+
+    prt_00F:
+    total 16
+    -rw-rw-r-- 1 acid acid 12778 Nov 12 23:35 prt_00F.261112233537.lst
+
+#### Converting to PDF
+
+The conversion to PDF starts when the printer is re-initialized with `devinit` on the Hercules console or when the running OS is shut down and Hercules exited. This closes the pipe, after which prt1403 converts the spooled listing:
+
+    devinit 00E
+        HHCPN098I Device 0:000E initialized
+        01:27:33 HERCULES SPOOL SYSTEM: STARTED PDF CONVERSION OF ./prt/prt_00E
+        HHCPR011I pipe receiver (pid=127134) terminating for 000E
+
+    devinit 00F
+        HHCPN098I Device 0:000F initialized
+        01:27:35 HERCULES SPOOL SYSTEM: STARTED PDF CONVERSION OF ./prt/prt_00F
+        HHCPR011I pipe receiver (pid=127060) terminating for 000F
+
+The resulting PDF files appear in the printer's host directory where to the `.lst` files were before the conversion.
+
+### Using prt1403 in DosBox-X
 
 For instructions on configuring DosBox-X to use prt1403, please refer to the following video: [![Retro printing with DosBox-x](https://img.youtube.com/vi/yY5HkZ3TIJM/0.jpg)](https://youtu.be/yY5HkZ3TIJM)
 
-#### Using prt1403 in Geany
+### Using prt1403 in Geany
 
 To configure Geany:
 
@@ -22,30 +108,34 @@ To configure Geany:
 - Select `Use an external command for printing`
 - Set the command to: `$HOME/.local/bin/prt1403 -e -y -u GEANY -j %e -o "%p/%e.pdf" "%p/%f"`
 
-### Note
+---
 
-This is a work in progress, constructive comments are appreciated.
+## Installing
 
-### Installing
-
-#### Linux
+### Linux
 
 The easiest way to install prt1403 is as follows.
 
     mkdir -p ~/.local/bin
+
     git clone https://github.com/Pynckels/prt1403.git
     pip install -r ./prt1403/requirements.txt
-    mv ./prt1403/prt1403 ~/.local/bin/prt1403
+ 
+    mv ./prt1403/prt1403          ~/.local/bin/prt1403
+    mv ./prt1403/hercules_spool   ~/.local/bin/hercules_spool
+    mv ./prt1403/hercules_convert ~/.local/bin/hercules_convert
+
     chmod +x ~/.local/bin/prt1403
+
     rm -r prt1403
 
 If running the program does not function, logging out and back in can help to update your $PATH.
 
-#### Mac
+### Mac
 
 Contact me and we'll cook something up together.
 
-#### Windows
+### Windows
 
 This program has been tested under Windows 7. The way to install is as follows.
 
@@ -61,7 +151,9 @@ This program has been tested under Windows 7. The way to install is as follows.
 5. Then test the installation by executing the PRT1403 help command.
     py PRT1403 --help    
 
-### Syntax
+---
+
+## Syntax
 
 To get the command line syntax the -h and the --help option can be used.
 
@@ -102,7 +194,9 @@ This results in the following information.
       -v, --version         Show program version and exit.
       -y, --overwrite       Overwrite output file.
 
-### Fonts
+---
+
+## Fonts
 
 The default font is `FONTMONO` (IBMPlexMono-Regular.ttf) which comes with this program.
 
@@ -126,13 +220,17 @@ This looks like:
 
 ![Fortran source code example with chosen font](tests/testOut/test4_4.png)
 
-### Lines per inch
+---
+
+## Lines per inch
 
 Like the real 1403 carriage, prt1403 can print at 6 or 8 lines per inch. The default is 6 LPI (66 lines per 11" page, 60 lines of text under the header). With -L/--lpi 8 a page holds 88 lines (80 lines of text under the header), lining up with the 1-80 scale on the right margin of the form. At 8 LPI the characters are squashed vertically so they fit the tighter line spacing while keeping 10 characters per inch.
 
     prt1403 -s SMALL -L 8 -o example.pdf example.txt
 
-### Print multiple files from stdin
+---
+
+## Print multiple files from stdin
 
 The input of prt1403 can be a file or the standard input (stdin). To send a file to prt1403 through stdin, one can use the command:
 
@@ -150,11 +248,15 @@ To get input from the stdin stream and send output to the stdout stream, one can
 
     ... | prt1403 -o - - | ...
 
-### Print multiple listings from a file
+---
+
+## Print multiple listings from a file
 
 It is possible to print multiple listings, each with their own separator page and number from a single file. In that case, each listing has to be separated from the next listing with a file separator (FS, 0x1C) character. An example can be found at tests/testIn/test5.asc
 
-### License
+---
+
+## License
 
 Copyright (c) 2025 by Filip Pynckels
 
@@ -174,7 +276,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with prt1403. If not, see <https://www.gnu.org/licenses/>.
 
-### Acknowledgements
+---
+
+## Acknowledgements
 
 ***virtual1403*** : This project is inspired by, and uses logic from the virutal1403 project of Matthew R. Wilson that can be found at https://github.com/racingmars/virtual1403
 
@@ -182,7 +286,9 @@ along with prt1403. If not, see <https://www.gnu.org/licenses/>.
 
 ***1403 font*** : This project uses the IBM140310Pitch-Regular-MRW font. It can be found at https://ibm-1401.info/1403Fonts.html#Fonts
 
-### Contributors
+---
+
+## Contributors
 
 Thanks to **[Harry6598](https://github.com/Harry6598)** for testing PRT1403 on Windows 7 and for describing the Windows procedure.
 

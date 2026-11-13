@@ -1,0 +1,62 @@
+#! /usr/bin/env python3
+
+# Copyright 2026 Filip Pynckels
+# See README.md at https://github.com/Pynckels/prt1403
+
+import glob
+import os
+import shlex
+import sys
+
+#-------------------------------------------------------------------------------
+#- Command to convert hercules listing file (in) to pdf output file (out)
+#-
+#- Note: The file names must be {in} and {out}
+#-
+#- Examples
+#-   prt1403 -c GREEN -n -s WIDE  -o {out} {in}
+#-   prt1403 -c WHITE -n -s SMALL -o {out} {in}
+#-------------------------------------------------------------------------------
+
+PRT_CMD = "prt1403 -c GREEN -n -s WIDE -o {out} {in}"
+
+#-------------------------------------------------------------------------------
+
+def cleanupFile(filePath):
+
+    _HIGH_BYTES = bytes(range(0x80, 0x100))                                     # octal \200-\377, decimal 128-255
+
+    tmpPath = f"{filePath}.tmp"
+
+    with open(filePath, "rb") as src:                                           # Read file contents
+        data = src.read()
+
+    with open(tmpPath, "wb") as dst:                                            # Only write ASCII chars 0-127
+        dst.write(data.translate(None, _HIGH_BYTES))
+
+    os.replace(tmpPath, filePath)                                               # mv tmp to lst
+
+#-------------------------------------------------------------------------------
+
+def main():
+
+    print("Hello")
+
+    if len(sys.argv) != 2: sys.exit(1)
+
+    prtdir = sys.argv[1]
+
+    if not prtdir.strip(): sys.exit(1)                                          # Check if the directory name is valid
+
+    for fi in sorted(glob.glob(os.path.join(prtdir, '*.lst.closed'))):          # Convert all .lst.closed to .pdf
+        cleanupFile(fi)
+        root, ext = os.path.splitext(fi)                                        # Remove .closed
+        root, ext = os.path.splitext(root)                                      # Remove .lst
+        fo = root + '.pdf'                                                      # Output .pdf file
+        cmd = PRT_CMD.format(**{'in': fi, 'out': fo}) + f" && rm {fi}"          # Conversion command + delete on success
+        os.system(cmd)
+
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    main()                                                                      # Do not run if script is imported as a module

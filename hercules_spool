@@ -1,0 +1,90 @@
+#! /usr/bin/env python3
+
+# Copyright 2026 Filip Pynckels
+# See README.md at https://github.com/Pynckels/prt1403
+
+# To restart this program from hercules hardware console
+# use the hercules command: DEVINIT 00E
+
+import os
+import re
+import subprocess
+import sys
+
+from datetime import datetime
+from pathlib  import Path
+
+#-------------------------------------------------------------------------------
+
+HERCULES_CONVERT = Path(__file__).with_name("hercules_convert")
+
+#-------------------------------------------------------------------------------
+
+def message(msg):
+
+    ts_time = datetime.now().strftime("%H:%M:%S")                               # Calculate timestamp
+    print(f"{ts_time} HERCULES SPOOL SYSTEM: " + msg, file=sys.stderr)
+
+#-------------------------------------------------------------------------------
+
+def main():
+
+    ts_date = datetime.now().strftime("%y%m%d%H%M%S")                           # Calculate timestamp
+
+    if len(sys.argv) != 3:
+        message(f"USAGE: {sys.argv[0]} <DEVICE NR> <HOST DIR>")
+        sys.exit(1)
+
+    devnr  = sys.argv[1]
+    prtdir = sys.argv[2]
+
+    if not re.fullmatch(r"[0-9a-fA-F]{3}", devnr):                              # Check if devnr contains exactly 3 digits
+        message(f"ERROR: {devnr} EXPECTED 3 HEXADECIMAL DIGITS")
+        sys.exit(1)
+
+    if not prtdir.strip():                                                      # Check if the directory name is valid
+        message("ERROR: INVALID HOST DIRECTORY NAME")
+        sys.exit(1)
+
+    try:
+        os.makedirs(prtdir, exist_ok=True)                                      # Create directory and missing parent directories
+    except OSError:
+        message(f"ERROR: UNABLE TO CREATE {prtdir}")
+        sys.exit(1)
+
+    message( "STARTED")                                                         # Write to hardware console
+    message(f"DEVICE {devnr} HOST DIR {prtdir}")
+
+    final = Path(prtdir) / f"prt_{devnr}.{ts_date}.lst.closed"                  # Prevent same directory overwriting
+    part  = Path(prtdir) / f"prt_{devnr}.{ts_date}.lst"
+
+    with open(part, "wb") as out:
+        while True:
+            chunk = sys.stdin.buffer.read1(65536)
+            if not chunk: break
+            out.write(chunk)
+            out.flush()
+
+    if part.stat().st_size == 0:
+        part.unlink()                                                           # Nothing was printed, don't create a job
+    else:
+        os.replace(part, final)                                                 # Publish the finished listing atomically
+
+    try:
+        subprocess.Popen(
+            [sys.executable, HERCULES_CONVERT, prtdir],
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+            )
+    except OSError:
+        message("ERROR: UNABLE TO START CONVERSION")
+        sys.exit(1)
+
+    message(f"STARTED PDF CONVERSION OF {prtdir}")
+
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    main()                                                                      # Do not run if script is imported as a module
