@@ -16,7 +16,7 @@ Examples of what can be done with prt1403 can be found at https://github.com/Pyn
 
 The commands to create the examples can be found at https://github.com/Pynckels/prt1403/blob/main/tests/runtests.sh
 
-### Using prt1403 in SDL Hercules Hyperion
+### Using prt1403 with SDL Hercules Hyperion
 
 prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules-390/hyperion) to turn the output of an emulated 1403 printer into PDF files. Hercules pipes everything printed on a device to the helper program `hercules_spool`, which saves it as a `.lst` file in a host directory. When the printer is re-initialized with `devinit`, the spooled file is converted to PDF by `hercules_convert`, which calls prt1403.
 
@@ -24,7 +24,7 @@ prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules
 
 1. **Install the helper programs.** Copy `hercules_spool` and `hercules_convert` (see the `hercules` folder of this repository) to the same directory. This directory must be in your `PATH`, and so must the directory containing `prt1403`. The Linux install below shows exactly this.
 
-2. **Configure the printers** in your Hercules `.conf` file. Anything printed on these devices is piped to `hercules_spool`, which writes to the given directory. Giving each printer its own directory prevents race conditions in the conversion program. The number of deffined 1403 printers is not limited to two.
+2. **Configure the printers** in your Hercules `.conf` file. Anything printed on these devices is piped to `hercules_spool`, which writes to the given directory. Giving each printer its own directory prevents race conditions in the conversion program. The number of defined 1403 printers is not limited to two.
 
    ```
    # Printers      anything you print will be piped to a directory
@@ -94,13 +94,13 @@ The conversion to PDF starts when the printer is re-initialized with `devinit` o
         01:27:35 HERCULES SPOOL SYSTEM: STARTED PDF CONVERSION OF ./prt/prt_00F
         HHCPR011I pipe receiver (pid=127060) terminating for 000F
 
-The resulting PDF files appear in the printer's host directory where to the `.lst` files were before the conversion.
+The resulting PDF files appear in the printer's host directory where the `.lst` files were before the conversion.
 
-### Using prt1403 in DosBox-X
+### Using prt1403 with DosBox-X
 
 For instructions on configuring DosBox-X to use prt1403, please refer to the following video: [![Retro printing with DosBox-x](https://img.youtube.com/vi/yY5HkZ3TIJM/0.jpg)](https://youtu.be/yY5HkZ3TIJM)
 
-### Using prt1403 in Geany
+### Using prt1403 with Geany
 
 To configure Geany:
 
