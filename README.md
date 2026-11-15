@@ -16,7 +16,11 @@ Examples of what can be done with prt1403 can be found at https://github.com/Pyn
 
 The commands to create the examples can be found at https://github.com/Pynckels/prt1403/blob/main/tests/runtests.sh
 
-### Using prt1403 with SDL Hercules Hyperion
+### Using prt1403 with SDL Hercules Hyperion (in SOCKDEV mode)
+
+**This is a work in progress. Constructive comments are appreciated.**
+
+### Using prt1403 with SDL Hercules Hyperion (in PIPELINE mode)
 
 prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules-390/hyperion) to turn the output of an emulated 1403 printer into PDF files. Hercules pipes everything printed on a device to the helper program `hercules_spool`, which saves it as a `.lst` file in a host directory. When the printer is re-initialized with `devinit`, the spooled file is converted to PDF by `hercules_convert`, which calls prt1403.
 
