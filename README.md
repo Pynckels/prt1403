@@ -22,81 +22,142 @@ The commands to create the examples can be found at https://github.com/Pynckels/
 
 ### Using prt1403 with SDL Hercules Hyperion (in PIPELINE mode)
 
-prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules-390/hyperion) to turn the output of an emulated 1403 printer into PDF files. Hercules pipes everything printed on a device to the helper program `hercules_spool`, which saves it as a `.lst` file in a host directory. When the printer is re-initialized with `devinit`, the spooled file is converted to PDF by `hercules_convert`, which calls prt1403.
+prt1403 can be used with [SDL Hercules Hyperion](https://github.com/SDL-Hercules-390/hyperion) to turn the output of an emulated 1403 printer into PDF files. Hercules pipes everything printed on a device to the helper program `hercules_prt1403_pipe`, which saves it as a `.spool` file in a host directory. When the printer is re-initialized with `devinit`, the spooled file is converted to a `.pdf` file with `prt1403`.
 
 #### Setup
 
-1. **Install the helper programs.** Copy `hercules_spool` and `hercules_convert` (see the `hercules` folder of this repository) to the same directory. This directory must be in your `PATH`, and so must the directory containing `prt1403`. The Linux install below shows exactly this.
+1. **Install the helper program.** Copy `hercules_1403_pipe` to a directory in your `PATH`. The Linux install below shows exactly this.
 
-2. **Configure the printers** in your Hercules `.conf` file. Anything printed on these devices is piped to `hercules_spool`, which writes to the given directory. Giving each printer its own directory prevents race conditions in the conversion program. The number of defined 1403 printers is not limited to two.
+2. **Configure the printers** in your Hercules `.conf` file. Anything printed on these devices is piped to `hercules_1403_pipe`, which writes to the given directory. Giving each printer its own directory prevents race conditions in the conversion program. The number of defined 1403 printers is not limited to two.
 
-   ```
-   # Printers      anything you print will be piped to a directory
-   #               Giving each printer its own directory can prevent
-   #               racing conditions in the conversion program
-   000E    1403    "| hercules_spool 00E ./prt/prt_00E"
-   000F    1403    "| hercules_spool 00F ./prt/prt_00F"
-   ```
+    ```
+    # Printers      anything you print will be piped to a directory
+    #               Giving each printer its own directory can prevent
+    #               racing conditions in the conversion program
+    000E    1403    "| hercules_1403_pipe 00E ./prt/prt_00E"
+    000F    1403    "| hercules_1403_pipe 00F ./prt/prt_00F"
+    ```
 
-3. **Start the printers** on the Hercules hardware console, each with its own spool class:
+3. **At boot** the hercules hardware console shows
 
-   ```
-   /START 00E CLASS E
-   /START 00F CLASS F
-   ```
+    ```
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING LOCAL SPOOL DIRECTORY ./prt/prt_00E
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00E
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00E READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00E
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00E READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00E/261119-162457-86b3.spool
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00E/261119-162457-86b3.spool READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: RECEIVING DATA FROM STDIN INTO ./prt/prt_00E/261119-162457-86b3.spool
+  
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING LOCAL SPOOL DIRECTORY ./prt/prt_00F
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00F
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00F READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00F
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00F READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00F/261119-162457-6079.spool
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00F/261119-162457-6079.spool READY
+    16:24:57 [MSG] HERCULES PRINTER SYSTEM: RECEIVING DATA FROM STDIN INTO ./prt/prt_00F/261119-162457-6079.spool
+    ```
+
+4. **Start the printers** on the Hercules hardware console, each with its own spool class:
+
+    ```
+    /START 00E CLASS E
+    /START 00F CLASS F
+    ```
 
    Check that they are running with:
 
-   ```
-   /QUERY UR
-       22:34:00 22:34:00 PUN  00D DRAINED   SYSTEM   CLASS = P      SEP
-       22:34:00 PRT  00E STARTED   SYSTEM   CLASS = E      SEP
-       22:34:00 PRT  00F STARTED   SYSTEM   CLASS = F      SEP
-   ```
+    ```
+    /QUERY UR
+        16:25:33 PRT  00E STARTED   SYSTEM   CLASS = E   SEP
+        16:25:33 PRT  00F STARTED   SYSTEM   CLASS = F   SEP
+    ```
 
 #### Printing
 
 From a CMS user, select the spool class of the printer you want to use and print a file:
 
-    spool prt class e
-    print profile exec a
-    spool prt class f
-    print hello c a
+```
+spool prt class e
+print profile exec a
+spool prt class f
+print hello c a
+```
 
 On the Hercules console you will see the spool output and the pipe receivers starting:
 
-    HHCPR007I pipe receiver (pid=23534) starting for 000E
-    22:34:53 PRT  00E OUTPUT OF CMSUSER  FILE  = 0171 RECDS= 000014 COPY= 01  E PRT
-    23:34:53 HERCULES SPOOL SYSTEM: STARTED
-    23:34:53 HERCULES SPOOL SYSTEM: DEVICE 00E HOST DIR ./prt_00E
-    HHCPR007I pipe receiver (pid=23557) starting for 000F
-    22:35:37 PRT  00F OUTPUT OF CMSUSER  FILE  = 0172 RECDS= 000005 COPY= 01  F PRT
-    23:35:37 HERCULES SPOOL SYSTEM: STARTED
-    23:35:37 HERCULES SPOOL SYSTEM: DEVICE 00F HOST DIR ./prt_00F
+```
+16:31:52 PRT  00E OUTPUT OF CMSUSER  FILE  = 0054 RECDS= 000014 COPY= 01  E PRT
+16:32:01 PRT  00F OUTPUT OF CMSUSER  FILE  = 0055 RECDS= 000005 COPY= 01  F PRT
+```
 
-On the host, each printed file is stored as a `.lst` file named after the device and a timestamp (`YYMMDDhhmmss`):
+On the host, each printed file is stored as a `.spool` file named after the device and a timestamp (`yymmdd-hhmmss-random`):
 
-    prt_00E:
-    total 16
-    -rw-rw-r-- 1 acid acid 12966 Nov 12 23:34 prt_00E.261112233453.lst
+```
+prt/prt_00F:
+-rw-rw-r-- 1 acid acid 12778 Nov 19 16:32 261119-162457-6079.spool
 
-    prt_00F:
-    total 16
-    -rw-rw-r-- 1 acid acid 12778 Nov 12 23:35 prt_00F.261112233537.lst
+prt/prt_00E:
+-rw-rw-r-- 1 acid acid 12966 Nov 19 16:31 261119-162457-86b3.spool
+```
 
 #### Converting to PDF
 
 The conversion to PDF starts when the printer is re-initialized with `devinit` on the Hercules console or when the running OS is shut down and Hercules exited. This closes the pipe, after which prt1403 converts the spooled listing:
 
-    devinit 00E
-        HHCPN098I Device 0:000E initialized
-        01:27:33 HERCULES SPOOL SYSTEM: STARTED PDF CONVERSION OF ./prt/prt_00E
-        HHCPR011I pipe receiver (pid=127134) terminating for 000E
+```
+devinit 00E
 
-    devinit 00F
-        HHCPN098I Device 0:000F initialized
-        01:27:35 HERCULES SPOOL SYSTEM: STARTED PDF CONVERSION OF ./prt/prt_00F
-        HHCPR011I pipe receiver (pid=127060) terminating for 000F
+HHC01114I 0:000E Printer: sending pipe receiver with pid 29698 signal 15
+HHC01107I 0:000E Printer: pipe receiver with pid 29698 terminating
+HHC01106I 0:000E Printer: pipe receiver with pid 32034 starting
+HHC02245I 0:000E device initialized
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: CREATING LOCAL SPOOL DIRECTORY ./prt/prt_00E
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00E
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00E READY
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00E
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: CREATING LISTING FILE ./prt/prt_00E/261119-162457-86b3.lst
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: CREATING LISTING FILE ./prt/prt_00E/261119-162457-86b3.lst READY
+16:36:18 [MSG] HERCULES PRINTER SYSTEM: CREATING PDF FILE ./prt/prt_00E/261119-162457-86b3.pdf
+16:36:19 [MSG] HERCULES PRINTER SYSTEM: CREATING PDF FILE ./prt/prt_00E/261119-162457-86b3.pdf READY
+16:36:19 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00E READY
+16:36:19 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00E/261119-163618-d01d.spool
+16:36:19 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00E/261119-163618-d01d.spool READY
+16:36:19 [MSG] HERCULES PRINTER SYSTEM: RECEIVING DATA FROM STDIN INTO ./prt/prt_00E/261119-163618-d01d.spool
+
+devinit 00F
+
+HHC01114I 0:000F Printer: sending pipe receiver with pid 29700 signal 15
+HHC01107I 0:000F Printer: pipe receiver with pid 29700 terminating
+HHC01106I 0:000F Printer: pipe receiver with pid 32052 starting
+HHC02245I 0:000F device initialized
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: CREATING LOCAL SPOOL DIRECTORY ./prt/prt_00F
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00F
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: REMOVING STALE TEMPORARY FILES IN ./prt/prt_00F READY
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00F
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: CREATING LISTING FILE ./prt/prt_00F/261119-162457-6079.lst
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: CREATING LISTING FILE ./prt/prt_00F/261119-162457-6079.lst READY
+16:36:28 [MSG] HERCULES PRINTER SYSTEM: CREATING PDF FILE ./prt/prt_00F/261119-162457-6079.pdf
+16:36:29 [MSG] HERCULES PRINTER SYSTEM: CREATING PDF FILE ./prt/prt_00F/261119-162457-6079.pdf READY
+16:36:29 [MSG] HERCULES PRINTER SYSTEM: CONVERTING TRAILING SPOOL FILES IN ./prt/prt_00F READY
+16:36:29 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00F/261119-163628-4fbd.spool
+16:36:29 [MSG] HERCULES PRINTER SYSTEM: CREATING SPOOL FILE ./prt/prt_00F/261119-163628-4fbd.spool READY
+16:36:29 [MSG] HERCULES PRINTER SYSTEM: RECEIVING DATA FROM STDIN INTO ./prt/prt_00F/261119-163628-4fbd.spool
+```
+
+On the host, each converted file is stored as a `.pdf` file named after the device and a timestamp (`yymmdd-hhmmss-random`) and a new `.spool` file is opened for the printer:
+
+```
+prt/prt_00F:
+-rw-rw-r-- 1 acid acid     0 Nov 19 16:36 261119-163628-4fbd.spool
+-rw-rw-r-- 1 acid acid 32572 Nov 19 16:36 261119-162457-6079.pdf
+
+prt/prt_00E:
+-rw-rw-r-- 1 acid acid     0 Nov 19 16:36 261119-163618-d01d.spool
+-rw-rw-r-- 1 acid acid 31661 Nov 19 16:36 261119-162457-86b3.pdf
+```
 
 The resulting PDF files appear in the printer's host directory where the `.lst` files were before the conversion.
 
@@ -125,9 +186,9 @@ The easiest way to install prt1403 is as follows.
     git clone https://github.com/Pynckels/prt1403.git
     pip install -r ./prt1403/requirements.txt
  
-    mv ./prt1403/prt1403          ~/.local/bin/prt1403
-    mv ./prt1403/hercules_spool   ~/.local/bin/hercules_spool
-    mv ./prt1403/hercules_convert ~/.local/bin/hercules_convert
+    mv ./prt1403/prt1403               ~/.local/bin/prt1403
+    mv ./prt1403/hercules_1403_pipe    ~/.local/bin/hercules_1403_pipe
+    mv ./prt1403/hercules_1403_sockdev ~/.local/bin/hercules_1403_sockdev
 
     chmod +x ~/.local/bin/prt1403
 

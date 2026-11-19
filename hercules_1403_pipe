@@ -1,0 +1,275 @@
+#! /usr/bin/env python3
+
+# Copyright 2026 Filip Pynckels
+# See README.md at https://github.com/Pynckels/prt1403
+
+# Reads printer data from stdin until end of file, spools it locally,
+# filters it and converts it to a PDF with prt1403.
+#
+# Example:
+#   some_command | hercules_1403_stdin.py /var/spool/printer00e
+#   hercules_1403_stdin.py /var/spool/printer00e < listing.txt
+
+import argparse
+import os
+import secrets
+import shlex
+import signal
+import sys
+import subprocess
+
+from datetime import datetime
+
+#-------------------------------------------------------------------------------
+
+PRT1403 = "prt1403 -y -c GREEN -n -s WIDE -o {outfile} {infile}"
+
+#-------------------------------------------------------------------------------
+
+REJECTED_BYTES = bytes(range(0x80, 0x100))                                      # Bytes outside 0x00-0x7F are removed (protect prt1403)
+
+#-------------------------------------------------------------------------------
+
+SPOOL_EXT = ".spool"
+LST_EXT  = ".lst"
+PDF_EXT   = ".pdf"
+TMP_EXT   = ".tmp"
+
+#-------------------------------------------------------------------------------
+
+class UsageOnlyParser(argparse.ArgumentParser):
+    """ Define child class to override error message format. """
+
+    def error(self, message):
+        program_name = os.path.basename(sys.argv[0])
+        err(f"INVALID PARAMETERS: FOR HELP: {program_name} --help")
+        sys.exit(1)
+
+#-------------------------------------------------------------------------------
+
+def _on_sigterm(signum, frame):
+    """ Override SIGTERM handler to translate SIGTERM signal to SIGINT signal. """
+
+    raise KeyboardInterrupt                                                     # Translate SIGTERM (kill) to SIGINT (ctrl+c)
+
+#-------------------------------------------------------------------------------
+
+def err(msg):
+    """ Error message formatting. """
+
+    ts_hhmmss = datetime.now().strftime("%H:%M:%S")                             # Calculate timestamp
+    print(f"{ts_hhmmss} [ERR] HERCULES PRINTER SYSTEM: " + msg, file=sys.stderr)
+
+def msg(msg):
+    """ Message formatting. """
+
+    ts_hhmmss = datetime.now().strftime("%H:%M:%S")                             # Calculate timestamp
+    print(f"{ts_hhmmss} [MSG] HERCULES PRINTER SYSTEM: " + msg, file=sys.stderr)
+
+#-------------------------------------------------------------------------------
+
+def discard(path):
+    """ Remove a file if it exists, else just get the hell out of here. """
+
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
+#-------------------------------------------------------------------------------
+
+def remove_stale_tmp(spooldir):
+    """ Remove leftover .tmp files from an earlier crash. """
+
+    for name in os.listdir(spooldir):
+        path = os.path.join(spooldir, name)
+        if name.endswith(LST_EXT + TMP_EXT) and os.path.isfile(path):
+            msg(f"REMOVING STALE TEMPORARY FILE {path}")
+            discard(path)
+            msg(f"REMOVING STALE TEMPORARY FILE {path} READY")
+
+#-------------------------------------------------------------------------------
+
+def convert_listing(listingfile):
+    """ Convert one listing file into a PDF with prt1403, then delete the listing file. """
+
+    if os.path.getsize(listingfile) == 0:                                       # Filter may have removed everything
+        msg(f"REMOVING EMPTY LISTING FILE {listingfile}")
+        os.remove(listingfile)
+        msg(f"REMOVING EMPTY LISTING FILE {listingfile} READY")
+        return
+
+    pdffile = listingfile[:-len(LST_EXT)] + PDF_EXT
+
+    cmd = [arg.format(infile=listingfile, outfile=pdffile)                      # Format per token: paths with spaces stay one argument
+           for arg in shlex.split(PRT1403)]
+
+    msg(f"CREATING PDF FILE {pdffile}")
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    except OSError:                                                             # e.g. prt1403 not installed
+        discard(pdffile)
+        raise
+
+    if result.returncode != 0:
+        discard(pdffile)                                                        # Never leave a partial PDF behind
+        err(f"PRT1403 FAILED ({result.returncode}) FOR {listingfile}: {result.stderr.strip()}")
+        raise OSError(f"prt1403 exit code {result.returncode}")
+
+    os.remove(listingfile)                                                      # PDF is complete, listing no longer needed
+
+    msg(f"CREATING PDF FILE {pdffile} READY")
+
+#-------------------------------------------------------------------------------
+
+def convert_spool(spoolfile):
+    """ Filter one spool file into a listing file, then delete the spool file. """
+
+    if os.path.getsize(spoolfile) == 0:                                         # Nothing was received (e.g. empty input)
+        msg(f"REMOVING EMPTY SPOOL FILE {spoolfile}")
+        os.remove(spoolfile)
+        msg(f"REMOVING EMPTY SPOOL FILE {spoolfile} READY")
+        return None
+
+    listingfile = spoolfile[:-len(SPOOL_EXT)] + LST_EXT
+    tmpfile     = listingfile + TMP_EXT
+
+    msg(f"CREATING LISTING FILE {listingfile}")
+
+    with open(spoolfile, "rb") as src, open(tmpfile, "wb") as lst:              # "wb": overwrite a partial file from an earlier crash
+        while True:
+            chunk = src.read(65536)                                             # Read in blocks, spool can be large
+            if not chunk:                                                       # End of spool file
+                break
+            lst.write(chunk.translate(None, REJECTED_BYTES))                    # Delete all bytes >= 0x80
+
+    os.replace(tmpfile, listingfile)                                            # Atomic: a .lst file is never half written
+    os.remove(spoolfile)                                                        # Listing is complete, spool no longer needed
+
+    msg(f"CREATING LISTING FILE {listingfile} READY")
+
+    return listingfile
+
+#-------------------------------------------------------------------------------
+
+def convert_all(spooldir):
+    """ Finish every spool/listing file in spooldir. Returns False if any conversion failed. """
+
+    ok = True
+
+    for ext, convert in ((SPOOL_EXT, convert_spool), (LST_EXT, convert_listing)):   # Spools first, so new listings get picked up
+        for name in sorted(os.listdir(spooldir)):                               # Oldest first (timestamp in name)
+            path = os.path.join(spooldir, name)
+            if not (name.endswith(ext) and os.path.isfile(path)):
+                continue
+            try:
+                convert(path)
+            except OSError:
+                err(f"UNABLE TO CONVERT {path}")
+                ok = False
+
+    return ok
+
+#-------------------------------------------------------------------------------
+
+def run_once(loc_spooldir):
+    """ One complete pass: prepare, receive from stdin, convert.
+
+        Returns the exit code for the program (0 on end of input or Ctrl+C, 1 on I/O error).
+        Fatal setup/convert errors terminate the program with sys.exit(1).
+    """
+
+    ts_yymmddhhmmss = datetime.now().strftime("%y%m%d-%H%M%S")                  # Calculate timestamp
+    rnd             = secrets.token_hex(2)                                      # 4 hex characters, e.g. "a3f9"
+    loc_spoolfile   = os.path.join(loc_spooldir, f"{ts_yymmddhhmmss}-{rnd}.spool")
+
+    msg(f"CREATING LOCAL SPOOL DIRECTORY {loc_spooldir}");
+
+    try:
+        os.makedirs(loc_spooldir, exist_ok=True)                                # Create directory and missing parents if needed
+    except OSError:
+        err(f"UNABLE TO CREATE LOCAL DEVICE DIRECTORY {loc_spooldir}")
+        sys.exit(1)
+
+    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir}")
+    remove_stale_tmp(loc_spooldir)
+    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir} READY")
+
+    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir}")
+    convert_all(loc_spooldir)                                                   # Clean up leftovers before starting a new spool file
+    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir} READY")
+
+    msg(f"CREATING SPOOL FILE {loc_spoolfile}");
+
+    try:
+        spool = open(loc_spoolfile, "xb")                                       # Create empty file, fail if it exists
+    except OSError:
+        err(f"UNABLE TO CREATE SPOOL FILE {loc_spoolfile}")
+        sys.exit(1)
+
+    msg(f"CREATING SPOOL FILE {loc_spoolfile} READY");
+
+    msg(f"RECEIVING DATA FROM STDIN INTO {loc_spoolfile}")
+
+    rc = 0
+    total = 0
+    try:
+        while True:
+            data = sys.stdin.buffer.read1(65536)                                # Returns what is available, does not wait for a full block
+            if not data:                                                        # Empty bytes = end of file
+                msg("END OF INPUT")
+                break
+            spool.write(data)
+            spool.flush()                                                       # Don't lose data if we get killed
+            total += len(data)
+    except KeyboardInterrupt:                                                   # Ctrl+C and by proxy also kill
+        msg("INTERRUPTED BY USER")
+    except OSError as e:                                                        # Read error, disk full, ...
+        err(f"I/O ERROR: {e}")
+        rc = 1
+    finally:
+        spool.close()
+
+    msg(f"RECEIVING DATA FROM STDIN INTO {loc_spoolfile} READY (RECEIVED {total} BYTES)")
+
+    msg("CONVERTING SPOOL FILE(S)")
+
+    try:
+        loc_listingfile = convert_spool(loc_spoolfile)
+        if loc_listingfile:
+            convert_listing(loc_listingfile)
+    except OSError:
+        err(f"UNABLE TO CONVERT {loc_spoolfile}")
+        sys.exit(1)
+
+    msg("CONVERTING SPOOL FILE(S) READY")
+
+    return rc
+
+#-------------------------------------------------------------------------------
+
+def main():
+    """ Main function. """
+
+    signal.signal(signal.SIGTERM, _on_sigterm)                                  # Translate SIGTERM (kill) to SIGINT (ctrl+c)
+
+    parser = UsageOnlyParser()
+    parser.add_argument("spooldir", metavar="<spool directory>", type=str,      help="Local spooling directory for this printer")
+
+    args = parser.parse_args()
+
+    loc_spooldir = args.spooldir                                                # Get the command line arguments
+
+    rc = run_once(loc_spooldir)                                                 # Single pass: end of input on stdin ends the program too
+
+    sys.exit(rc)
+
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        msg("INTERRUPTED BY USER")
+        sys.exit(130)                                                           # Conventional exit code for SIGINT

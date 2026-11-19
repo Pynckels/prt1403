@@ -16,6 +16,7 @@ import signal
 import socket
 import sys
 import subprocess
+import time
 
 from datetime import datetime
 
@@ -26,6 +27,8 @@ PRT1403 = "prt1403 -y -c GREEN -n -s WIDE -o {outfile} {infile}"
 #-------------------------------------------------------------------------------
 
 REJECTED_BYTES = bytes(range(0x80, 0x100))                                      # Bytes outside 0x00-0x7F are removed (protect prt1403)
+
+RESTART_DELAY = 1                                                               # Seconds to wait before restarting after the host closed the connection
 
 #-------------------------------------------------------------------------------
 
@@ -172,6 +175,121 @@ def convert_all(spooldir):
 
 #-------------------------------------------------------------------------------
 
+def run_once(host_ip, host_port, host_timeout, loc_spooldir):
+    """ One complete pass: prepare, connect, receive, convert.
+
+        Returns:
+            None -> the host closed the connection: the caller restarts the pass.
+            int  -> the caller stops and exits with this code (Ctrl+C / kill, I/O error).
+        Fatal setup/connect/convert errors terminate the program with sys.exit(1).
+    """
+
+    ts_yymmddhhmmss = datetime.now().strftime("%y%m%d-%H%M%S")                  # Calculate timestamp
+    rnd             = secrets.token_hex(2)                                      # 4 hex characters, e.g. "a3f9"
+    loc_spoolfile   = os.path.join(loc_spooldir, f"{ts_yymmddhhmmss}-{rnd}.spool")
+
+    msg(f"CREATING LOCAL SPOOL DIRECTORY {loc_spooldir}");
+
+    try:
+        os.makedirs(loc_spooldir, exist_ok=True)                                # Create directory and missing parents if needed
+    except OSError:
+        err(f"UNABLE TO CREATE LOCAL DEVICE DIRECTORY {loc_spooldir}")
+        sys.exit(1)
+
+    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir}")
+    remove_stale_tmp(loc_spooldir)
+    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir} READY")
+
+    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir}")
+    convert_all(loc_spooldir)                                                   # Clean up leftovers before starting a new spool file
+    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir} READY")
+
+    msg(f"CREATING SPOOL FILE {loc_spoolfile}");
+
+    try:
+        spool = open(loc_spoolfile, "xb")                                       # Create empty file, fail if it exists
+    except OSError:
+        err(f"UNABLE TO CREATE SPOOL FILE {loc_spoolfile}")
+        sys.exit(1)
+
+    msg(f"CREATING SPOOL FILE {loc_spoolfile} READY");
+
+    msg(f"CONNECTING TO IP {host_ip} PORT {host_port} TIMEOUT {host_timeout}")
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:                                                                        # Try to connect
+        s.settimeout(host_timeout)
+        s.connect((host_ip, host_port))
+    except KeyboardInterrupt:                                                   # Ctrl+C while connecting: nothing received, stop
+        s.close()
+        spool.close()
+        discard(loc_spoolfile)
+        msg("INTERRUPTED BY USER")
+        return 0
+    except OSError:                                                             # There is no valid connection
+        s.close()
+        spool.close()
+        discard(loc_spoolfile)
+        err (f"COULD NOT CONNECT TO IP {host_ip} PORT {host_port} BEFORE TIMEOUT {host_timeout}")
+        sys.exit(1)
+
+    s.settimeout(5)                                                             # Receive timeout, separate from the connect timeout
+
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)                     # Detect a silently dead connection
+    if hasattr(socket, "TCP_KEEPIDLE"):                                         # Linux
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 5)                # Seconds idle before the first probe
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 2)               # Seconds between probes
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)                 # Failed probes before the connection is declared dead
+    elif hasattr(socket, "TCP_KEEPALIVE"):                                      # macOS: idle time before the first probe
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPALIVE, 5)
+
+    msg(f"CONNECTING TO IP {host_ip} PORT {host_port} TIMEOUT {host_timeout} READY")
+
+    msg(f"RECEIVING DATA INTO {loc_spoolfile}")
+
+    rc = 0
+    total = 0
+    restart = False                                                             # True only when the host closed the connection
+    try:
+        while True:
+            try:
+                data = s.recv(4096)
+            except socket.timeout:                                              # Idle period, not an error: keep waiting
+                continue
+            if not data:                                                        # Empty bytes = peer closed the connection
+                msg("CONNECTION CLOSED BY HOST")
+                restart = True
+                break
+            spool.write(data)
+            spool.flush()                                                       # Don't lose data if we get killed
+            total += len(data)
+    except KeyboardInterrupt:                                                   # Ctrl+C and by proxy also kill
+        msg("INTERRUPTED BY USER")
+    except OSError as e:                                                        # Connection reset, disk full, ...
+        err(f"I/O ERROR: {e}")
+        rc = 1
+    finally:
+        s.close()
+        spool.close()
+
+    msg(f"RECEIVING DATA INTO {loc_spoolfile} READY (RECEIVED {total} BYTES)")
+
+    msg("CONVERTING SPOOL FILE(S)")
+
+    try:
+        loc_listingfile = convert_spool(loc_spoolfile)
+        if loc_listingfile:
+            convert_listing(loc_listingfile)
+    except OSError:
+        err(f"UNABLE TO CONVERT {loc_spoolfile}")
+        sys.exit(1)
+
+    msg("CONVERTING SPOOL FILE(S) READY")
+
+    return None if restart else rc
+
+#-------------------------------------------------------------------------------
+
 def main():
     """ Main function. """
 
@@ -222,91 +340,14 @@ def main():
     host_timeout = args.timeout
     loc_spooldir = args.spooldir
 
-    ts_yymmddhhmmss = datetime.now().strftime("%y%m%d-%H%M%S")                  # Calculate timestamp
-    rnd             = secrets.token_hex(2)                                      # 4 hex characters, e.g. "a3f9"
-    loc_spoolfile   = os.path.join(loc_spooldir, f"{ts_yymmddhhmmss}-{rnd}.spool")
+    while True:
+        rc = run_once(host_ip, host_port, host_timeout, loc_spooldir)
 
-    msg(f"CREATING LOCAL SPOOL DIRECTORY {loc_spooldir}");
+        if rc is not None:                                                      # Ctrl+C / kill / I/O error: everything is converted, stop
+            sys.exit(rc)
 
-    try:
-        os.makedirs(loc_spooldir, exist_ok=True)                                # Create directory and missing parents if needed
-    except OSError:
-        err(f"UNABLE TO CREATE LOCAL DEVICE DIRECTORY {loc_spooldir}")
-        sys.exit(1)
-
-    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir}")
-    remove_stale_tmp(loc_spooldir)
-    msg(f"REMOVING STALE TEMPORARY FILES IN {loc_spooldir} READY")
-
-    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir}")
-    convert_all(loc_spooldir)                                                   # Clean up leftovers before starting a new spool file
-    msg(f"CONVERTING TRAILING SPOOL FILES IN {loc_spooldir} READY")
-
-    msg(f"CREATING SPOOL FILE {loc_spoolfile}");
-
-    try:
-        spool = open(loc_spoolfile, "xb")                                       # Create empty file, fail if it exists
-    except OSError:
-        err(f"UNABLE TO CREATE SPOOL FILE {loc_spoolfile}")
-        sys.exit(1)
-
-    msg(f"CREATING SPOOL FILE {loc_spoolfile} READY");
-
-    msg(f"CONNECTING TO IP {host_ip} PORT {host_port} TIMEOUT {host_timeout}")
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:                                                                        # Try to connect
-        s.settimeout(host_timeout)
-        s.connect((host_ip, host_port))
-    except (OSError, KeyboardInterrupt):                                        # There is no valid connection
-        s.close()
-        spool.close()
-        discard(loc_spoolfile)
-        err (f"COULD NOT CONNECT TO IP {host_ip} PORT {host_port} BEFORE TIMEOUT {host_timeout}")
-        sys.exit(1)
-
-    msg(f"CONNECTING TO IP {host_ip} PORT {host_port} TIMEOUT {host_timeout} READY")
-
-    msg(f"RECEIVING DATA INTO {loc_spoolfile}")
-
-    rc = 0
-    total = 0
-    try:
-        while True:
-            try:
-                data = s.recv(4096)
-            except socket.timeout:                                              # Idle period, not an error: keep waiting
-                continue
-            if not data:                                                        # Empty bytes = peer closed the connection
-                msg("CONNECTION CLOSED BY HOST")
-                break
-            spool.write(data)
-            spool.flush()                                                       # Don't lose data if we get killed
-            total += len(data)
-    except KeyboardInterrupt:                                                   # Ctrl+C and by proxy also kill
-        msg("INTERRUPTED BY USER")
-    except OSError as e:                                                        # Connection reset, disk full, ...
-        err(f"I/O ERROR: {e}")
-        rc = 1
-    finally:
-        s.close()
-        spool.close()
-
-    msg(f"RECEIVING DATA INTO {loc_spoolfile} READY (RECEIVED {total} BYTES)")
-
-    msg("CONVERTING SPOOL FILE(S)")
-
-    try:
-        loc_listingfile = convert_spool(loc_spoolfile)
-        if loc_listingfile:
-            convert_listing(loc_listingfile)
-    except OSError:
-        err(f"UNABLE TO CONVERT {loc_spoolfile}")
-        sys.exit(1)
-
-    msg("CONVERTING SPOOL FILE(S) READY")
-
-    sys.exit(rc)
+        msg(f"RESTARTING IN {RESTART_DELAY} SECOND(S)")                         # Host closed the connection: start over
+        time.sleep(RESTART_DELAY)                                               # Avoid a tight loop if the host keeps closing at once
 
 #-------------------------------------------------------------------------------
 
